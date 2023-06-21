@@ -1,4 +1,4 @@
-# Database-Course-Design
+# my-vue-app
 
 ## Project setup
 ```

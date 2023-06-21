@@ -1,5 +1,5 @@
 {
-  "name": "vue_test01",
+  "name": "my-vue-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "element-plus": "^2.3.6",
+    "element-plus": "^2.3.7",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
