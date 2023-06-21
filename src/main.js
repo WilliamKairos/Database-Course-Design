@@ -1,24 +1,7 @@
-import { createApp } from 'vue';
-import ElementPlus from 'element-plus';
-import 'element-plus/theme-chalk/index.css';
-import App from './App.vue';
-import router from './router';
-
-const app = createApp(App).use(ElementPlus).use(router);
-
-router.beforeEach((to, from, next) => {
-    if (to.matched.some(record => record.meta.requiresAuth)) {
-        if (!localStorage.getItem('userType')) {
-            next({
-                path: '/',
-                query: { redirect: to.fullPath }
-            });
-        } else {
-            next();
-        }
-    } else {
-        next();
-    }
-});
-
-app.mount('#app');
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+import ElementPlue from 'element-plus'
+import 'element-plus/dist/index.css'
+createApp(App).use(store).use(ElementPlue).use(router).mount('#app')
