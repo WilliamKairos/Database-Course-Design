@@ -1,4 +1,4 @@
-# Database-Course-Design
+# vue_test
 
 ## Project setup
 ```
