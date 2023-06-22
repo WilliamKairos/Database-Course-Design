@@ -1,7 +1,5 @@
 <template>
   <div class="login-container">
-    <el-input placeholder="请输入账号" v-model="username" class="input-field"></el-input>
-    <el-input placeholder="请输入密码" v-model="password" show-password class="input-field"></el-input>
     <div class="radio-group">
       <label>
         <input type="radio" value="student" v-model="userType" /> 学生
@@ -10,6 +8,8 @@
         <input type="radio" value="admin" v-model="userType" /> 管理员
       </label>
     </div>
+    <el-input placeholder="请输入账号" v-model="username" class="input-field"></el-input>
+    <el-input placeholder="请输入密码" v-model="password" show-password class="input-field"></el-input>
     <el-button type="primary" @click="login">登录</el-button>
   </div>
 </template>
