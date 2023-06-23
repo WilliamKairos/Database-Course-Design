@@ -2,10 +2,10 @@
   <div class="login-container">
     <div class="radio-group">
       <label>
-        <input type="radio" value="student" v-model="userType" /> 学生
+        <input type="radio" value="student" v-model="userType"/> 学生
       </label>
       <label>
-        <input type="radio" value="admin" v-model="userType" /> 管理员
+        <input type="radio" value="admin" v-model="userType"/> 管理员
       </label>
     </div>
     <el-input placeholder="请输入账号" v-model="username" class="input-field"></el-input>
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -24,17 +26,35 @@ export default {
     };
   },
   methods: {
-    login() {
-      // 这里应该调用后端API进行验证
-      localStorage.setItem('userType', this.userType);
-      const redirect = this.$route.query.redirect;
-      if (this.userType === 'admin') {
-        this.$router.push(redirect || '/admin');
-      } else {
-        this.$router.push(redirect || '/student');
+    async login() {
+      try {
+        const response = await axios.post('http://localhost:8080/login', {
+          username: this.username,
+          password: this.password
+        });
+
+        if (response.status === 200) {
+          // 登录成功
+          const user = response.data; // 获取用户信息
+          localStorage.setItem('userType', this.userType);
+          const redirect = this.$route.query.redirect;
+
+          if (this.userType === 'admin') {
+            this.$router.push(redirect || '/admin');
+          } else {
+            this.$router.push(redirect || '/student/profile');
+          }
+        } else {
+          // 登录失败
+          alert('Login failed');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('An error occurred');
+
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
