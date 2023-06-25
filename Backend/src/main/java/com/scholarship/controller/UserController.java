@@ -1,10 +1,8 @@
 package com.scholarship.controller;
-
-import com.scholarship.utils.Result;
 import com.scholarship.entity.User;
 import com.scholarship.service.UserService;
+import com.scholarship.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,11 +23,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Result<User>> login(@RequestParam("username") String username,
                                               @RequestParam("password") String password) {
-        Result<User> result = userService.login(username, password);
-        if (result.getData() != null) {
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-        }
+        Result<User> result = userService.findUserByUsernameAndPassword(username, password);
+        return ResponseEntity.status(result.getCode()).body(result);
     }
 }
