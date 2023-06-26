@@ -46,18 +46,9 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
-    public Result<User> findUserByUsernameAndPassword(String username, String password) {
+    public User findUserByUsernameAndPassword(String username, String password) {
         User user = userMapper.findUserByUsernameAndPassword(username, password);
-        if (user != null) {
-            Result<User> result = new Result<>(200, "登录成功", user);
-            result.setData(user);
-            return result;
-        } else {
-            return new Result<>(401, "用户名密码错误", null);
-        }
-    }
-    public List<User> getAllUsers() {
-        return userMapper.getAllUsers();
+        return user;
     }
 
 }

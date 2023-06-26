@@ -4,10 +4,9 @@ import com.scholarship.service.UserService;
 import com.scholarship.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/login")
@@ -21,9 +20,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Result<User>> login(@RequestParam("username") String username,
-                                              @RequestParam("password") String password) {
-        Result<User> result = userService.findUserByUsernameAndPassword(username, password);
-        return ResponseEntity.status(result.getCode()).body(result);
+    public Result<User> login(@RequestBody Map<String, String> requestData) {
+        String username = requestData.get("username");
+        String password = requestData.get("password");
+
+        User user = userService.findUserByUsernameAndPassword(username, password);
+        System.out.println(user);
+        if ( user == null) {
+            return new Result<>(401, "登录失败，用户名或密码不正确", null);
+        }else {
+            return new Result<>(200, "登录成功!", user);
+        }
     }
 }

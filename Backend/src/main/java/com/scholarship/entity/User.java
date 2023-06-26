@@ -1,5 +1,8 @@
 package com.scholarship.entity;
 
+import lombok.Data;
+
+@Data
 public class User {
     private Integer id;
     private String username;
@@ -8,39 +11,5 @@ public class User {
 
     public User() {
         // 默认构造函数
-    }
-
-    // 添加其他字段的getter和setter方法
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUserType() {
-        return userType;
-    }
-
-    public void setUserType(String userType) {
-        this.userType = userType;
     }
 }

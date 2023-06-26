@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -12,6 +13,4 @@ import java.util.List;
 @Repository
 public interface UserMapper {
     User findUserByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
-//    @Select("SELECT username, password FROM users")
-    List<User> getAllUsers();
 }
