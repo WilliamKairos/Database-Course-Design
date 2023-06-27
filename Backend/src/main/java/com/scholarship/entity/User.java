@@ -22,3 +22,5 @@ public class User {
 //        return userType;
 //    }
 }
+
+//刚才的贡献度没记录上，这个是记录贡献点的
