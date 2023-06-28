@@ -31,6 +31,7 @@ import com.scholarship.utils.Result;
 import com.scholarship.entity.User;
 import com.scholarship.mapper.UserMapper;
 import com.scholarship.utils.Result;
+import org.hibernate.usertype.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,9 +47,8 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
-    public User findUserByUsernameAndPassword(String username, String password) {
-        User user = userMapper.findUserByUsernameAndPassword(username, password);
-        return user;
+    public User findUser(String username, String password, String UserType) {
+        return userMapper.findUser(username, password, UserType);
     }
 
 }

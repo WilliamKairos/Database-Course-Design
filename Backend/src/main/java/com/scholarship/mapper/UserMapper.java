@@ -12,5 +12,5 @@ import java.util.List;
 @Mapper
 @Repository
 public interface UserMapper {
-    User findUserByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
+    User findUser(@Param("username") String username, @Param("password") String password, @Param("userType") String userType);
 }

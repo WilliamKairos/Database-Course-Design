@@ -27,18 +27,18 @@ public class UserController {
         String userType = requestData.get("userType"); // 接收用户身份类型
 
         System.out.println(userType);
-        User user = userService.findUserByUsernameAndPassword(username, password);
+        User user = userService.findUser(username, password, userType);
         System.out.println(userType);
-        System.out.println(user.getUserType());
+//        System.out.println(user.getUserType());
         System.out.println(user);
         if (user == null) {
             Result<User> result = new Result<>(201, "登录失败，用户名或密码不正确", null);
             return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
         } else {
-            if (!user.getUserType().equals(userType)) { // 验证用户身份类型
-                Result<User> result = new Result<>(201, "登录失败，身份类型不匹配", user);
-                return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-            }
+//            if (!user.getUserType().equals(userType)) { // 验证用户身份类型
+//                Result<User> result = new Result<>(201, "登录失败，身份类型不匹配", user);
+//                return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+//            }
             Result<User> result = new Result<>(200, "登录成功!", user);
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
