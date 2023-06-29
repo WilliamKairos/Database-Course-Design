@@ -1,3 +1,4 @@
+// StudentServiceImpl.java
 package com.scholarship.service.impl;
 
 import com.scholarship.entity.Student;
@@ -27,5 +28,25 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public int getTotalStudents() {
         return studentMapper.getTotalStudents();
+    }
+
+    @Override
+    public Student saveStudent(Student student) {
+        studentMapper.addStudent(student);
+        return student;
+    }
+
+    @Override
+    public void updateStudent(Student student) {
+        studentMapper.updateStudent(student);
+    }
+
+    @Override
+    public void deleteStudent(int id) {
+        studentMapper.deleteStudent(id);
+    }
+    @Override
+    public Student getStudentById(int id) {
+        return studentMapper.getStudentById(id);
     }
 }
