@@ -27,8 +27,8 @@ public class StudentController {
                                              @RequestParam(defaultValue = "1") int currentPage) {
         try {
             List<Student> students = studentService.getStudents(pageSize, currentPage);
-            int totalItems = studentService.getTotalStudents();
-            return new Result<>(200, "成功获取学生数据", students, totalItems);
+//            int totalItems = studentService.getTotalStudents();
+            return new Result<>(200, "成功获取学生数据", students);
         } catch (Exception e) {
             e.printStackTrace();
             return new Result<>(500, "获取学生数据失败", null);
