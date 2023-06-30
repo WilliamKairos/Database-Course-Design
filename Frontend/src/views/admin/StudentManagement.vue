@@ -3,11 +3,6 @@
     <el-table :data="students" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="studentId" label="学号" width="120"></el-table-column>
-      <el-table-column prop="avatar" label="头像" width="120">
-        <template #default="{ row }">
-          <img :src="row.avatar" alt="avatar" width="50" height="50">
-        </template>
-      </el-table-column>
       <el-table-column prop="name" label="学生姓名"></el-table-column>
       <el-table-column prop="gender" label="性别"></el-table-column>
       <el-table-column prop="phoneNumber" label="手机号码"></el-table-column>
@@ -20,7 +15,6 @@
           <el-button type="text" size="small" @click="showDeleteConfirm(row)">删除</el-button>
         </template>
       </el-table-column>
-      <el-button type="primary" @click="showAddDialog">添加学生</el-button>
     </el-table>
     <el-pagination
         @size-change="handleSizeChange"
@@ -69,11 +63,10 @@
     <el-dialog v-model="deleteConfirmVisible" title="确认删除学生" :visible.sync="deleteConfirmVisible" width="30%">
       <p>确定要删除该学生吗？</p>
       <span class="dialog-footer">
-        <el-button @click="cancelDelete">取消</el-button>
-        <el-button type="danger" @click="confirmDelete">确定</el-button>
+      <el-button @click="cancelDelete">取消</el-button>
+      <el-button type="danger" @click="confirmDelete">确定</el-button>
       </span>
     </el-dialog>
-
     <el-button type="primary" @click="showAddDialog">添加学生</el-button>
     <el-dialog v-model="addDialogVisible" title="添加学生信息" :visible.sync="addDialogVisible">
       <el-form :model="addForm" :rules="rules" ref="addFormRef" label-width="80px">
@@ -109,6 +102,7 @@
     </el-dialog>
   </div>
 </template>
+
 
 <script>
 import {reactive, ref} from 'vue';
