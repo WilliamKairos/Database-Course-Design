@@ -24,7 +24,7 @@
         DELETE FROM students WHERE id = #{id}
     </delete>
 
-    <select id="getStudentById" resultMap="com.scholarship.entity.Student">
+    <select id="getStudentById" resultType="com.scholarship.entity.Student">
         SELECT * FROM students WHERE id = #{id}
     </select>
 </mapper>

@@ -4,7 +4,7 @@
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="studentId" label="学号" width="120"></el-table-column>
       <el-table-column prop="avatar" label="头像" width="120">
-        <template #default="{row}">
+        <template #default="{ row }">
           <img :src="row.avatar" alt="avatar" width="50" height="50">
         </template>
       </el-table-column>
@@ -15,9 +15,9 @@
       <el-table-column prop="grade" label="年级"></el-table-column>
       <el-table-column prop="major" label="专业"></el-table-column>
       <el-table-column label="操作">
-        <template #default="{row}">
-          <el-button type="text" size="small" @click="handleEdit(row)">编辑</el-button>
-          <el-button type="text" size="small" @click="handleDelete(row)">删除</el-button>
+        <template #default="{ row }">
+          <el-button type="text" size="small" @click="showEditDialog(row)">编辑</el-button>
+          <el-button type="text" size="small" @click="showDeleteConfirm(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -33,7 +33,7 @@
     >
     </el-pagination>
 
-    <el-dialog :visible.sync="editDialogVisible" title="编辑学生信息">
+    <el-dialog v-model="editDialogVisible" title="编辑学生信息" :visible.sync="editDialogVisible">
       <el-form :model="editForm" label-width="80px">
         <el-form-item label="学号">
           <el-input v-model="editForm.studentId"></el-input>
@@ -60,159 +60,186 @@
           <el-input v-model="editForm.major"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveStudent">保存</el-button>
+      <div class="dialog-footer">
+        <el-button @click="cancelEdit">取消</el-button>
+        <el-button type="primary" @click="saveEditedStudent">保存</el-button>
       </div>
     </el-dialog>
-    <!-- Add Student Dialog -->
-    <el-dialog title="Add Student" :visible.sync="dialogVisible" width="30%">
-      <el-form :model="newStudent" label-width="100px">
-        <!-- ...input fields for student data... -->
-        <el-form :model="newStudent" label-width="100px">
-          <el-form-item label="Student ID">
-            <el-input v-model="newStudent.studentId"></el-input>
-          </el-form-item>
-          <el-form-item label="Name">
-            <el-input v-model="newStudent.name"></el-input>
-          </el-form-item>
-          <el-form-item label="Gender">
-            <el-select v-model="newStudent.gender" placeholder="Select Gender">
-              <el-option label="Male" value="Male"></el-option>
-              <el-option label="Female" value="Female"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="Phone Number">
-            <el-input v-model="newStudent.phoneNumber"></el-input>
-          </el-form-item>
-          <el-form-item label="Email">
-            <el-input v-model="newStudent.email"></el-input>
-          </el-form-item>
-          <el-form-item label="Grade">
-            <el-input v-model="newStudent.grade"></el-input>
-          </el-form-item>
-          <el-form-item label="Major">
-            <el-input v-model="newStudent.major"></el-input>
-          </el-form-item>
-        </el-form>
 
-
-        <el-form-item>
-          <el-button type="primary" @click="saveStudent">Save</el-button>
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-        </el-form-item>
-      </el-form>
+    <!-- 删除学生确认弹窗 -->
+    <el-dialog v-model="deleteConfirmVisible" title="确认删除学生" :visible.sync="deleteConfirmVisible" width="30%">
+      <p>确定要删除该学生吗？</p>
+      <span class="dialog-footer">
+    <el-button @click="cancelDelete">取消</el-button>
+    <el-button type="danger" @click="confirmDelete">确定</el-button>
+  </span>
     </el-dialog>
   </div>
 </template>
-
 <script>
+import { reactive, ref } from 'vue';
+import {
+  ElTable,
+  ElTableColumn,
+  ElButton,
+  ElPagination,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElRadioGroup,
+  ElRadio,
+} from 'element-plus';
+import 'element-plus/dist/index.css';
 import axios from "axios";
 
 export default {
-  data() {
-    return {
-      students: [],
-      selectedStudents: [],
-      pageSize: 10,
-      currentPage: 1,
-      totalItems: 0,
-      editDialogVisible: false,
-      editForm: {
-        studentId: "",
-        name: "",
-        gender: "",
-        phoneNumber: "",
-        email: "",
-        grade: "",
-        major: "",
-      },
-    };
+  components: {
+    ElTable,
+    ElTableColumn,
+    ElButton,
+    ElPagination,
+    ElDialog,
+    ElForm,
+    ElFormItem,
+    ElInput,
+    ElRadioGroup,
+    ElRadio,
   },
-  methods: {
-    handleSelectionChange(val) {
-      this.selectedStudents = val;
-    },
-    handleSizeChange(newSize) {
-      this.pageSize = newSize;
-      this.getStudents();
-    },
-    handleCurrentChange(newPage) {
-      this.currentPage = newPage;
-      this.getStudents();
-    },
-    handleEdit(row) {
-      // 处理编辑操作
-      axios.put(`http://localhost:8080/api/students/${row.id}`, row)
+  setup() {
+    const students = ref([]);
+    const selectedStudents = ref([]);
+    const pageSize = ref(10);
+    const currentPage = ref(1);
+    const totalItems = ref(0);
+    const editDialogVisible = ref(false);
+    const editForm = reactive({
+      id: '',
+      studentId: '',
+      name: '',
+      gender: '',
+      phoneNumber: '',
+      email: '',
+      grade: '',
+      major: '',
+    });
+    const deleteConfirmVisible = ref(false);
+    const deleteTarget = ref(null);
+
+    const handleSelectionChange = (val) => {
+      selectedStudents.value = val;
+    };
+
+    const handleSizeChange = (newSize) => {
+      pageSize.value = newSize;
+      currentPage.value = 1; // Reset to the first page when the page size changes
+      getStudents();
+    };
+
+    const handleCurrentChange = (newPage) => {
+      currentPage.value = newPage;
+      getStudents();
+    };
+
+    const showEditDialog = (row) => {
+      editForm.id = row.id;
+      editForm.studentId = row.studentId;
+      editForm.name = row.name;
+      editForm.gender = row.gender;
+      editForm.phoneNumber = row.phoneNumber;
+      editForm.email = row.email;
+      editForm.grade = row.grade;
+      editForm.major = row.major;
+      editDialogVisible.value = true;
+    };
+
+    const cancelEdit = () => {
+      editDialogVisible.value = false;
+    };
+
+    const saveEditedStudent = () => {
+      // Save edited student logic using Element Plus components
+      axios
+          .put(`http://localhost:8080/api/students/${editForm.id}`, editForm)
           .then(() => {
-            // 在成功响应后更新数据
-            this.getStudents();
-            console.log("Edit student:", row);
+            editDialogVisible.value = false;
+            getStudents();
+            console.log('Edit student:', editForm);
           })
           .catch((error) => {
             console.error(error);
           });
-    },
-    handleDelete(row) {
-      // 处理删除操作
-      axios.delete(`http://localhost:8080/api/students/${row.id}`)
-          .then(() => {
-            // 在成功响应后更新数据
-            this.getStudents();
-            console.log("Delete student:", row);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-    },
-    getStudents() {
-      // Prepare the request data
+    };
+
+    const showDeleteConfirm = (row) => {
+      deleteTarget.value = row;
+      deleteConfirmVisible.value = true;
+    };
+
+    const cancelDelete = () => {
+      deleteConfirmVisible.value = false;
+    };
+
+    const confirmDelete = () => {
+      if (deleteTarget.value) {
+        // Delete student logic using Element Plus components
+        axios
+            .delete(`http://localhost:8080/api/students/${deleteTarget.value.id}`)
+            .then(() => {
+              deleteConfirmVisible.value= false;
+              getStudents();
+              console.log("Delete student:", deleteTarget.value);
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+      }
+    };
+    const resetDeleteConfirm = () => {
+      deleteTarget.value = null;
+    };
+
+    const getStudents = () => {
       const requestData = {
-        pageSize: this.pageSize,
-        currentPage: this.currentPage
+        pageSize: pageSize.value,
+        currentPage: currentPage.value,
       };
 
-      // Send a POST request with JSON payload
+      // Get students logic using Element Plus components
       axios
           .post("http://localhost:8080/api/students/getStudent", requestData)
-          .then(response => {
-            this.students = response.data.data;
-            this.totalItems = response.data.totalItems;
+          .then((response) => {
+            students.value = response.data.data;
+            totalItems.value = response.data.totalItems;
           })
-          .catch(error => {
+          .catch((error) => {
             console.error(error);
           });
-    },
-    editStudent(row) {
-      this.editForm = { ...row };
-      this.editDialogVisible = true;
-    },
-    saveStudent() {
-      axios.post('http://localhost:8080/api/students/saveStudent', this.newStudent)
-          .then(response => {
-            const savedStudent = response.data.data;
-            this.students.push(savedStudent);
-            this.dialogVisible = false;
-          })
-          .catch(error => {
-            console.error(error);
-          });
-    },
+    };
 
-    deleteStudent(row) {
-      const studentId = row.studentId;
-      axios.delete(`http://localhost:8080/api/students/${studentId}`)
-          .then(response => {
-            const deletedStudentId = response.data.data;
-            this.students = this.students.filter(student => student.studentId !== deletedStudentId);
-          })
-          .catch(error => {
-            console.error(error);
-          });
-    },
-  },
-  mounted() {
-    this.getStudents();
+    getStudents();
+
+    return {
+      students,
+      selectedStudents,
+      pageSize,
+      currentPage,
+      totalItems,
+      editDialogVisible,
+      editForm,
+      deleteConfirmVisible,
+      deleteTarget,
+      handleSelectionChange,
+      handleSizeChange,
+      handleCurrentChange,
+      showEditDialog,
+      cancelEdit,
+      saveEditedStudent,
+      showDeleteConfirm,
+      cancelDelete,
+      confirmDelete,
+      resetDeleteConfirm,
+    };
   },
 };
 </script>
@@ -220,5 +247,3 @@ export default {
 <style>
 /* Add your custom styles here */
 </style>
-
-
