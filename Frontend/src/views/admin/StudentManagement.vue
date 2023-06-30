@@ -22,7 +22,6 @@
       </el-table-column>
       <el-button type="primary" @click="showAddDialog">添加学生</el-button>
     </el-table>
-
     <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -35,29 +34,29 @@
     </el-pagination>
 
     <el-dialog v-model="editDialogVisible" title="编辑学生信息" :visible.sync="editDialogVisible">
-      <el-form :model="editForm" label-width="80px">
-        <el-form-item label="学号">
+      <el-form :model="editForm" :rules="rules" ref="editFormRef" label-width="80px">
+        <el-form-item label="学号" prop="studentId">
           <el-input v-model="editForm.studentId"></el-input>
         </el-form-item>
-        <el-form-item label="学生姓名">
+        <el-form-item label="学生姓名" prop="name">
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="性别">
+        <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="editForm.gender">
             <el-radio label="男"></el-radio>
             <el-radio label="女"></el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="手机号码">
+        <el-form-item label="手机号码" prop="phoneNumber">
           <el-input v-model="editForm.phoneNumber"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱">
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="editForm.email"></el-input>
         </el-form-item>
-        <el-form-item label="年级">
+        <el-form-item label="年级" prop="grade">
           <el-input v-model="editForm.grade"></el-input>
         </el-form-item>
-        <el-form-item label="专业">
+        <el-form-item label="专业" prop="major">
           <el-input v-model="editForm.major"></el-input>
         </el-form-item>
       </el-form>
@@ -67,18 +66,52 @@
       </div>
     </el-dialog>
 
-    <!-- 删除学生确认弹窗 -->
     <el-dialog v-model="deleteConfirmVisible" title="确认删除学生" :visible.sync="deleteConfirmVisible" width="30%">
       <p>确定要删除该学生吗？</p>
       <span class="dialog-footer">
-    <el-button @click="cancelDelete">取消</el-button>
-    <el-button type="danger" @click="confirmDelete">确定</el-button>
-  </span>
+        <el-button @click="cancelDelete">取消</el-button>
+        <el-button type="danger" @click="confirmDelete">确定</el-button>
+      </span>
+    </el-dialog>
+
+    <el-button type="primary" @click="showAddDialog">添加学生</el-button>
+    <el-dialog v-model="addDialogVisible" title="添加学生信息" :visible.sync="addDialogVisible">
+      <el-form :model="addForm" :rules="rules" ref="addFormRef" label-width="80px">
+        <el-form-item label="学号" prop="studentId">
+          <el-input v-model="addForm.studentId"></el-input>
+        </el-form-item>
+        <el-form-item label="学生姓名" prop="name">
+          <el-input v-model="addForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="gender">
+          <el-radio-group v-model="addForm.gender">
+            <el-radio label="男"></el-radio>
+            <el-radio label="女"></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="手机号码" prop="phoneNumber">
+          <el-input v-model="addForm.phoneNumber"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="addForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="年级" prop="grade">
+          <el-input v-model="addForm.grade"></el-input>
+        </el-form-item>
+        <el-form-item label="专业" prop="major">
+          <el-input v-model="addForm.major"></el-input>
+        </el-form-item>
+      </el-form>
+      <div class="dialog-footer">
+        <el-button @click="cancelAdd">取消</el-button>
+        <el-button type="primary" @click="saveNewStudent">保存</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
+
 <script>
-import { reactive, ref } from 'vue';
+import {reactive, ref} from 'vue';
 import {
   ElTable,
   ElTableColumn,
@@ -128,7 +161,18 @@ export default {
     });
     const deleteConfirmVisible = ref(false);
     const deleteTarget = ref(null);
-
+    const addDialogVisible = ref(false);
+    const addForm = reactive({
+      studentId: '',
+      name: '',
+      gender: '',
+      phoneNumber: '',
+      email: '',
+      grade: '',
+      major: '',
+    });
+    const editFormRef = ref(null);
+    const addFormRef = ref(null);
     const handleSelectionChange = (val) => {
       selectedStudents.value = val;
     };
@@ -159,25 +203,30 @@ export default {
     const cancelEdit = () => {
       editDialogVisible.value = false;
     };
-
     const saveEditedStudent = () => {
-      // Save edited student logic using Element Plus components
-      axios
-          .put(`http://localhost:8080/api/students/${editForm.id}`, editForm)
-          .then((response) => {
-            if (response.status === 200 || response.status === 204) {
-              getStudents(); // 重新获取一次数据，确保数据是最新的
-              editDialogVisible.value = false; // 关闭编辑对话框
-              console.log('Edit student:', editForm);
-            } else {
-              console.error('Error while editing student:', response);
-            }
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+      editFormRef.value.validate((valid) => {
+        if (valid) {
+          // 验证通过，保存编辑的学生
+          axios
+              .put(`http://localhost:8080/api/students/${editForm.id}`, editForm)
+              .then((response) => {
+                if (response.status === 200 || response.status === 204) {
+                  getStudents(); // 重新获取一次数据，确保数据是最新的
+                  editDialogVisible.value = false; // 关闭编辑对话框
+                  console.log('Edit student:', editForm);
+                } else {
+                  console.error('Error while editing student:', response);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+        } else {
+          ElMessage.error('请确保所有字段都已填写并且格式正确');
+          return false;
+        }
+      });
     };
-
 
     const showDeleteConfirm = (row) => {
       deleteTarget.value = row;
@@ -195,7 +244,7 @@ export default {
         axios
             .delete(`http://localhost:8080/api/students/${deleteTarget.value.id}`)
             .then(() => {
-              deleteConfirmVisible.value= false;
+              deleteConfirmVisible.value = false;
               getStudents();
               console.log("Delete student:", deleteTarget.value);
               deleteTarget.value = null; // add this line
@@ -226,6 +275,64 @@ export default {
 
     };
 
+    const showAddDialog = () => {
+      addDialogVisible.value = true;
+    };
+
+    const cancelAdd = () => {
+      addDialogVisible.value = false;
+    };
+
+    const rules = reactive({
+      studentId: [
+        {required: true, message: '请输入学号', trigger: 'blur'},
+      ],
+      name: [
+        {required: true, message: '请输入姓名', trigger: 'blur'},
+      ],
+      gender: [
+        {required: true, message: '请选择性别', trigger: 'blur'},
+      ],
+      grade: [
+        {required: true, message: '请输入年级', trigger: 'blur'},
+      ],
+      major: [
+        {required: true, message: '请输入专业', trigger: 'blur'},
+      ],
+      phoneNumber: [
+        {required: true, message: '请输入手机号码', trigger: 'blur'},
+        {pattern: /^1[3456789]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur'},
+      ],
+      email: [
+        {required: true, message: '请输入邮箱地址', trigger: 'blur'},
+        {type: 'email', message: '邮箱地址格式不正确', trigger: 'blur'},
+      ],
+    });
+    const saveNewStudent = () => {
+      addFormRef.value.validate((valid) => {
+        if (valid) {
+          // 验证通过，保存新的学生
+          axios
+              .post('http://localhost:8080/api/students/saveStudent', addForm)
+              .then(response => {
+                if (response.status === 200 || response.status === 204) {
+                  getStudents();
+                  addDialogVisible.value = false;
+                  console.log('Add student:', addForm);
+                } else {
+                  console.error('Error while adding 学生:', response);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+        } else {
+          ElMessage.error('请确保所有字段都已填写并且格式正确');
+          return false;
+        }
+      });
+    };
+
     getStudents();
 
     return {
@@ -238,6 +345,11 @@ export default {
       editForm,
       deleteConfirmVisible,
       deleteTarget,
+      addDialogVisible,
+      addForm,
+      rules,
+      editFormRef,
+      addFormRef,
       handleSelectionChange,
       handleSizeChange,
       handleCurrentChange,
@@ -248,6 +360,9 @@ export default {
       cancelDelete,
       confirmDelete,
       resetDeleteConfirm,
+      showAddDialog,
+      cancelAdd,
+      saveNewStudent,
     };
   },
 };
