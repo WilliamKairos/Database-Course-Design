@@ -20,6 +20,7 @@
           <el-button type="text" size="small" @click="showDeleteConfirm(row)">删除</el-button>
         </template>
       </el-table-column>
+      <el-button type="primary" @click="showAddDialog">添加学生</el-button>
     </el-table>
 
     <el-pagination
@@ -87,6 +88,7 @@ import {
   ElForm,
   ElFormItem,
   ElInput,
+  ElMessage,
   ElRadioGroup,
   ElRadio,
 } from 'element-plus';
@@ -105,6 +107,7 @@ export default {
     ElInput,
     ElRadioGroup,
     ElRadio,
+    ElMessage,
   },
   setup() {
     const students = ref([]);
@@ -161,15 +164,20 @@ export default {
       // Save edited student logic using Element Plus components
       axios
           .put(`http://localhost:8080/api/students/${editForm.id}`, editForm)
-          .then(() => {
-            editDialogVisible.value = false;
-            getStudents();
-            console.log('Edit student:', editForm);
+          .then((response) => {
+            if (response.status === 200 || response.status === 204) {
+              getStudents(); // 重新获取一次数据，确保数据是最新的
+              editDialogVisible.value = false; // 关闭编辑对话框
+              console.log('Edit student:', editForm);
+            } else {
+              console.error('Error while editing student:', response);
+            }
           })
           .catch((error) => {
             console.error(error);
           });
     };
+
 
     const showDeleteConfirm = (row) => {
       deleteTarget.value = row;
@@ -178,6 +186,7 @@ export default {
 
     const cancelDelete = () => {
       deleteConfirmVisible.value = false;
+      deleteTarget.value = null; // add this line
     };
 
     const confirmDelete = () => {
@@ -189,6 +198,7 @@ export default {
               deleteConfirmVisible.value= false;
               getStudents();
               console.log("Delete student:", deleteTarget.value);
+              deleteTarget.value = null; // add this line
             })
             .catch((error) => {
               console.error(error);
@@ -206,15 +216,14 @@ export default {
       };
 
       // Get students logic using Element Plus components
-      axios
-          .post("http://localhost:8080/api/students/getStudent", requestData)
-          .then((response) => {
-            students.value = response.data.data;
-            totalItems.value = response.data.totalItems;
-          })
-          .catch((error) => {
-            console.error(error);
+      axios.post('http://localhost:8080/api/students/getStudent', requestData)
+          .then(response => {
+            if (response.data.code === 200) {
+              students.value = response.data.data.students; //将students数组赋值给Table的data
+              totalItems.value = response.data.data.total; //可以把total用于分页
+            }
           });
+
     };
 
     getStudents();

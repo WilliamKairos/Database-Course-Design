@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,17 +24,22 @@ public class StudentController {
     }
 
     @PostMapping("/getStudent")
-    public ResponseEntity<Result<List<Student>>> getStudents(@RequestBody Map<String, Integer> requestData) {
+    public ResponseEntity<Result<Map<String, Object>>> getStudents(@RequestBody Map<String, Integer> requestData) {
         int pageSize = requestData.getOrDefault("pageSize", 10);
         int currentPage = requestData.getOrDefault("currentPage", 1);
         try {
             List<Student> students = studentService.getStudents(pageSize, currentPage);
-            return new ResponseEntity<>(new Result<>(200, "成功获取学生数据", students), HttpStatus.OK);
+            int totalStudents = studentService.getTotalStudents();
+            Map<String, Object> response = new HashMap<>();
+            response.put("students", students);
+            response.put("total", totalStudents);
+            return new ResponseEntity<>(new Result<>(200, "成功获取学生数据", response), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(new Result<>(500, "获取学生数据失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
     @PostMapping("/saveStudent")
@@ -47,16 +53,6 @@ public class StudentController {
         }
     }
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Result<String>> deleteStudent(@PathVariable("id") int studentId) {
-//        try {
-//            studentService.deleteStudent(studentId);
-//            return new ResponseEntity<>(new Result<>(200, "成功删除学生信息", "Success"), HttpStatus.OK);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<>(new Result<>(500, "删除学生信息失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
     @PutMapping("/{id}")
     public ResponseEntity<Result<Student>> updateStudent(@PathVariable("id") int id, @RequestBody Student updatedStudent) {
         try {
@@ -64,7 +60,10 @@ public class StudentController {
             if (student == null) {
                 return new ResponseEntity<>(new Result<>(404, "学生不存在", null), HttpStatus.NOT_FOUND);
             }
+
+            System.out.println(updatedStudent);
             // 更新学生信息
+            student.setStudentId(updatedStudent.getStudentId());
             student.setName(updatedStudent.getName());
             student.setGender(updatedStudent.getGender());
             student.setPhoneNumber(updatedStudent.getPhoneNumber());
@@ -72,7 +71,7 @@ public class StudentController {
             student.setGrade(updatedStudent.getGrade());
             student.setMajor(updatedStudent.getMajor());
 
-            studentService.saveStudent(student); // 保存更新后的学生信息
+            studentService.updateStudent(student); // 保存更新后的学生信息
 
             return new ResponseEntity<>(new Result<>(200, "学生信息已更新", student), HttpStatus.OK);
         } catch (Exception e) {
@@ -80,6 +79,7 @@ public class StudentController {
             return new ResponseEntity<>(new Result<>(500, "更新学生信息失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Result<Object>> deleteStudent(@PathVariable("id") int id) {

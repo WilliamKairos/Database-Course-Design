@@ -32,9 +32,17 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student saveStudent(Student student) {
-        studentMapper.addStudent(student);
-        return student;
+        Student existingStudent = studentMapper.getStudentById(student.getId());
+        if (existingStudent != null) {
+            studentMapper.updateStudent(student);
+            existingStudent = studentMapper.getStudentById(student.getId());
+            return existingStudent;
+        } else {
+            studentMapper.addStudent(student);
+            return studentMapper.getStudentById(student.getId());
+        }
     }
+
 
     @Override
     public void updateStudent(Student student) {
@@ -44,7 +52,12 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public void deleteStudent(int id) {
         studentMapper.deleteStudent(id);
+        Student student = studentMapper.getStudentById(id);
+        if (student != null) {
+            throw new RuntimeException("学生删除失败");
+        }
     }
+
     @Override
     public Student getStudentById(int id) {
         return studentMapper.getStudentById(id);
