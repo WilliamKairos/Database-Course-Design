@@ -87,77 +87,78 @@ export default {
     ElInputNumber,
   },
   name: 'StudentList',
-  data() {
-    return {
-      students: [],
-      loading: false,
-      currentPage: 1,
-      pageSize: 10,
-      addStudentDialogVisible: false,
-      newStudent: {
-        name: '',
-        studentId: '',
-        academicScore: 0,
-        ideologyScore: 0,
-        researchScore: 0,
-        socialScore: 0,
-      },
-      selectedStudents: [],
-    };
-  },
-  mounted() {
-    this.fetchStudents('grade1');
-  },
-  methods: {
-    async fetchStudents(grade) {
+  setup() {
+    const students = ref([]);
+    const loading = ref(false);
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+    const addStudentDialogVisible = ref(false);
+    const newStudent = ref({
+      name: '',
+      studentId: '',
+      academicScore: 0,
+      ideologyScore: 0,
+      researchScore: 0,
+      socialScore: 0,
+    });
+    const selectedStudents = ref([]);
+
+    const fetchStudents = async (grade) => {
       try {
-        this.loading = true;
+        loading.value = true;
         const response = await axios.get(`/api/students?grade=${grade}`);
-        this.students = response.data;
+        students.value = response.data;
       } catch (error) {
         console.error(error);
       } finally {
-        this.loading = false;
+        loading.value = false;
       }
-    },
-    async deleteStudent(student) {
+    };
+
+    const deleteStudent = async (student) => {
       try {
         await axios.delete(`/api/students/${student.id}`);
-        this.students = this.students.filter((s) => s.id !== student.id);
+        students.value = students.value.filter((s) => s.id !== student.id);
       } catch (error) {
         console.error(error);
       }
-    },
-    calculateTotalScore(student) {
+    };
+
+    const calculateTotalScore = (student) => {
       return (
           student.academicScore +
           student.ideologyScore +
           student.researchScore +
           student.socialScore
       );
-    },
-    handleSelectionChange(selectedItems) {
-      this.selectedStudents = selectedItems;
-    },
-    handleSizeChange(pageSize) {
-      this.currentPage = 1;
-      this.pageSize = pageSize;
-    },
-    handleCurrentChange(page) {
-      this.currentPage = page;
-    },
-    async addStudent() {
+    };
+
+    const handleSelectionChange = (selectedItems) => {
+      selectedStudents.value = selectedItems;
+    };
+
+    const handleSizeChange = (newPageSize) => {
+      currentPage.value = 1;
+      pageSize.value = newPageSize;
+    };
+
+    const handleCurrentChange = (page) => {
+      currentPage.value = page;
+    };
+
+    const addStudent = async () => {
       try {
-        await axios.post('/api/students', this.newStudent);
-        this.fetchStudents();
-        this.cancelAddStudent();
+        await axios.post('/api/students', newStudent.value);
+        await fetchStudents();
+        cancelAddStudent();
       } catch (error) {
         console.error(error);
       }
-    },
-    cancelAddStudent() {
-      this.addStudentDialogVisible = false;
-      this.newStudent = {
+    };
+
+    const cancelAddStudent = () => {
+      addStudentDialogVisible.value = false;
+      newStudent.value = {
         name: '',
         studentId: '',
         academicScore: 0,
@@ -165,31 +166,38 @@ export default {
         researchScore: 0,
         socialScore: 0,
       };
-    },
-    showAddStudentDialog() {
-      this.addStudentDialogVisible = true;
-    },
+    };
+
+    const showAddStudentDialog = () => {
+      addStudentDialogVisible.value = true;
+    };
+
+    onMounted(() => {
+      fetchStudents('grade1');
+    });
+
+    return {
+      students,
+      loading,
+      currentPage,
+      pageSize,
+      addStudentDialogVisible,
+      newStudent,
+      selectedStudents,
+      fetchStudents,
+      deleteStudent,
+      calculateTotalScore,
+      handleSelectionChange,
+      handleSizeChange,
+      handleCurrentChange,
+      addStudent,
+      cancelAddStudent,
+      showAddStudentDialog,
+    };
   },
 };
 </script>
 
-<style scoped>
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.button-group {
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.el-pagination {
-  margin-top: 20px;
-  text-align: right;
-}
-
-.add-student-form {
-  margin-top: 20px;
-}
+<style>
+/* 你可以在这里添加一些样式来使页面看起来更好 */
 </style>

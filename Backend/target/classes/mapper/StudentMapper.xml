@@ -17,14 +17,39 @@
     <update id="updateStudent">
         UPDATE students SET student_id = #{studentId}, name = #{name},
                             gender = #{gender}, phone_number = #{phoneNumber}, email = #{email}, grade = #{grade},
-                            major = #{major} WHERE id = #{id}
+                            major = #{major} WHERE student_id = #{studentId}
     </update>
 
     <delete id="deleteStudent">
-        DELETE FROM students WHERE id = #{id}
+        DELETE FROM students WHERE student_id = #{studentId}
     </delete>
 
     <select id="getStudentById" resultType="com.scholarship.entity.Student">
-        SELECT * FROM students WHERE id = #{id}
+        SELECT * FROM students WHERE student_id = #{studentId}
+    </select>
+    <select id="searchStudents" resultType="com.scholarship.entity.Student">
+        SELECT * FROM students
+        WHERE 1 = 1
+        <if test="searchForm.studentId != null and searchForm.studentId != ''">
+            AND student_id = #{searchForm.studentId}
+        </if>
+        <if test="searchForm.name != null and searchForm.name != ''">
+            AND name = #{searchForm.name}
+        </if>
+        <if test="searchForm.gender != null and searchForm.gender != ''">
+            AND gender = #{searchForm.gender}
+        </if>
+        <if test="searchForm.phoneNumber != null and searchForm.phoneNumber != ''">
+            AND phone_number = #{searchForm.phoneNumber}
+        </if>
+        <if test="searchForm.email != null and searchForm.email != ''">
+            AND email = #{searchForm.email}
+        </if>
+        <if test="searchForm.grade != null and searchForm.grade != ''">
+            AND grade = #{searchForm.grade}
+        </if>
+        <if test="searchForm.major != null and searchForm.major != ''">
+            AND major = #{searchForm.major}
+        </if>
     </select>
 </mapper>
