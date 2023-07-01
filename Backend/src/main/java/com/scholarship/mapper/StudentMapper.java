@@ -28,5 +28,7 @@ public interface StudentMapper {
 
 //    @Select("SELECT * FROM students WHERE id = #{id}")
     Student getStudentById(@Param("id") int id);
+
+    List<Student> searchStudents(@Param("searchForm") Student searchForm);
 //}
 }

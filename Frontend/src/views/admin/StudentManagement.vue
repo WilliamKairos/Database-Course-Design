@@ -100,6 +100,41 @@
         <el-button type="primary" @click="saveNewStudent">保存</el-button>
       </div>
     </el-dialog>
+    <el-button type="primary" @click="showSearchDialog">查询学生</el-button>
+    <el-dialog v-model="searchDialogVisible" title="查询学生" :visible.sync="searchDialogVisible">
+      <el-form :model="searchForm" ref="searchFormRef" label-width="80px">
+        <el-form-item label="学号" prop="studentId">
+          <el-input v-model="searchForm.studentId"></el-input>
+        </el-form-item>
+        <el-form-item label="学生姓名" prop="name">
+          <el-input v-model="searchForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="gender">
+          <el-select v-model="searchForm.gender" placeholder="请选择">
+            <el-option label="男" value="男"></el-option>
+            <el-option label="女" value="女"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="手机号码" prop="phoneNumber">
+          <el-input v-model="searchForm.phoneNumber"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="searchForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="年级" prop="grade">
+          <el-input v-model="searchForm.grade"></el-input>
+        </el-form-item>
+        <el-form-item label="专业" prop="major">
+          <el-input v-model="searchForm.major"></el-input>
+        </el-form-item>
+        <!-- Add more search fields as needed -->
+      </el-form>
+      <div class="dialog-footer">
+        <el-button @click="cancelSearch">取消</el-button>
+        <el-button type="primary" @click="performSearch">确认查找</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -118,6 +153,8 @@ import {
   ElMessage,
   ElRadioGroup,
   ElRadio,
+  ElSelect,
+  ElOption,
 } from 'element-plus';
 import 'element-plus/dist/index.css';
 import axios from "axios";
@@ -135,6 +172,8 @@ export default {
     ElRadioGroup,
     ElRadio,
     ElMessage,
+    ElSelect,
+    ElOption,
   },
   setup() {
     const students = ref([]);
@@ -167,6 +206,24 @@ export default {
     });
     const editFormRef = ref(null);
     const addFormRef = ref(null);
+
+    const searchDialogVisible = ref(false);
+    const searchForm = ref({
+      studentId: '',
+      name: '',
+      gender: '',
+      phoneNumber: '',
+      email: '',
+      grade: '',
+      major: '',
+    });
+    const showSearchDialog = () => {
+      searchDialogVisible.value = true;
+    };
+
+    const cancelSearch = () => {
+      searchDialogVisible.value = false;
+    };
     const handleSelectionChange = (val) => {
       selectedStudents.value = val;
     };
@@ -327,6 +384,37 @@ export default {
       });
     };
 
+    const performSearch = () => {
+      const searchData = {
+        studentId: searchForm.value.studentId,
+        name: searchForm.value.name,
+        gender: searchForm.value.gender,
+        phoneNumber: searchForm.value.phoneNumber,
+        email: searchForm.value.email,
+        grade: searchForm.value.grade,
+        major: searchForm.value.major,
+      };
+
+      // 清空搜索表单
+      Object.keys(searchForm.value).forEach((key) => {
+        searchForm.value[key] = '';
+      });
+      axios
+          .post('http://localhost:8080/api/students/search', searchData)
+          .then((response) => {
+            if (response.status === 200 && response.data.code === 200) {
+              students.value = response.data.data; // 更新为返回的学生数据
+              totalItems.value = response.data.data.length; // 可以把total用于分页
+              searchDialogVisible.value = false; // 关闭查询对话框
+            } else {
+              console.error('Error while searching students:', response);
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+    };
+
     getStudents();
 
     return {
@@ -344,6 +432,11 @@ export default {
       rules,
       editFormRef,
       addFormRef,
+      searchDialogVisible,
+      searchForm,
+      showSearchDialog,
+      cancelSearch,
+      performSearch,
       handleSelectionChange,
       handleSizeChange,
       handleCurrentChange,

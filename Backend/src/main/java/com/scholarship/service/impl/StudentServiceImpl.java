@@ -62,4 +62,10 @@ public class StudentServiceImpl implements StudentService {
     public Student getStudentById(int id) {
         return studentMapper.getStudentById(id);
     }
+
+
+    @Override
+    public List<Student> searchStudents(Student searchForm) {
+        return studentMapper.searchStudents(searchForm);
+    }
 }

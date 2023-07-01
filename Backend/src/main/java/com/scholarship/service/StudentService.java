@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface StudentService {
     List<Student> getStudents(int pageSize, int currentPage);
-
+    List<Student> searchStudents(Student searchForm);
     int getTotalStudents();
 
     Student saveStudent(Student student);
@@ -17,4 +17,5 @@ public interface StudentService {
     void updateStudent(Student student);
 
     void deleteStudent(int id);
+
 }

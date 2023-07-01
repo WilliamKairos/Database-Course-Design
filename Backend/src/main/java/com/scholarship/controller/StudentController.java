@@ -97,4 +97,16 @@ public class StudentController {
             return new ResponseEntity<>(new Result<>(500, "删除学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/search")
+    public ResponseEntity<Result<List<Student>>> searchStudents(@RequestBody Student searchForm) {
+        try {
+            List<Student> students = studentService.searchStudents(searchForm);
+            return new ResponseEntity<>(new Result<>(200, "成功查询学生", students), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(new Result<>(500, "查询学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
