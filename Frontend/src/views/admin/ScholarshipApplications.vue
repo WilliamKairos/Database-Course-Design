@@ -41,23 +41,30 @@
     </div>
 
     <el-dialog v-model="addStudentDialogVisible" title="添加申请学生">
-      <el-form :model="newStudent" label-width="100px" class="add-student-form">
-        <el-form-item label="学生姓名">
+      <el-form :model="newStudent" :rules="formRules" ref="addStudentForm" label-width="100px" class="add-student-form">
+        <el-form-item label="学生姓名" prop="name">
           <el-input v-model="newStudent.name"></el-input>
         </el-form-item>
-        <el-form-item label="学号">
+        <el-form-item label="学号" prop="studentId">
           <el-input v-model="newStudent.studentId"></el-input>
         </el-form-item>
-        <el-form-item label="学业成绩">
+        <el-form-item label="年级" prop="grade">
+          <el-select v-model="newStudent.grade" placeholder="请选择年级">
+            <el-option label="研一年级" value="grade1"></el-option>
+            <el-option label="研二年级" value="grade2"></el-option>
+            <el-option label="研三年级" value="grade3"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学业成绩" prop="academicScore">
           <el-input-number v-model="newStudent.academicScore" :min="0" :max="20"></el-input-number>
         </el-form-item>
-        <el-form-item label="思政表现">
+        <el-form-item label="思政表现" prop="ideologyScore">
           <el-input-number v-model="newStudent.ideologyScore" :min="0" :max="30"></el-input-number>
         </el-form-item>
-        <el-form-item label="科研能力">
+        <el-form-item label="科研能力" prop="researchScore">
           <el-input-number v-model="newStudent.researchScore" :min="0" :max="30"></el-input-number>
         </el-form-item>
-        <el-form-item label="社会服务">
+        <el-form-item label="社会服务" prop="socialScore">
           <el-input-number v-model="newStudent.socialScore" :min="0" :max="20"></el-input-number>
         </el-form-item>
         <el-form-item>
@@ -70,8 +77,18 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber } from 'element-plus';
+import {ref, onMounted} from 'vue';
+import {
+  ElTable,
+  ElTableColumn,
+  ElButton,
+  ElPagination,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElInputNumber
+} from 'element-plus';
 import axios from 'axios';
 
 export default {
@@ -103,6 +120,33 @@ export default {
     });
     const selectedStudents = ref([]);
 
+    const formRules = {
+      name: [
+        {required: true, message: '请输入学生姓名', trigger: 'blur'}
+      ],
+      studentId: [
+        {required: true, message: '请输入学号', trigger: 'blur'}
+      ],
+      grade: [
+        {required: true, message: '请选择年级', trigger: 'change'}
+      ],
+      academicScore: [
+        {required: true, message: '请输入学业成绩', trigger: 'blur'},
+        {type: 'number', min: 0, max: 20, message: '请输入有效的学业成绩', trigger: 'blur'}
+      ],
+      ideologyScore: [
+        {required: true, message: '请输入思政表现', trigger: 'blur'},
+        {type: 'number', min: 0, max: 30, message: '请输入有效的思政表现', trigger: 'blur'}
+      ],
+      researchScore: [
+        {required: true, message: '请输入科研能力', trigger: 'blur'},
+        {type: 'number', min: 0, max: 30, message: '请输入有效的科研能力', trigger: 'blur'}
+      ],
+      socialScore: [
+        {required: true, message: '请输入社会服务', trigger: 'blur'},
+        {type: 'number', min: 0, max: 20, message: '请输入有效的社会服务', trigger: 'blur'}
+      ]
+    };
     const fetchStudents = async (grade) => {
       try {
         loading.value = true;
@@ -115,6 +159,31 @@ export default {
       }
     };
 
+    const addStudent = async () => {
+      try {
+        await this.$refs.addStudentForm.validate(); // 表单验证
+        const exists = await checkStudentExistence(newStudent.value.studentId); // 检查学生是否存在
+        if (exists) {
+          this.$message.error('该学号的学生已存在');
+        } else {
+          await axios.post('/api/students', newStudent.value);
+          await fetchStudents();
+          cancelAddStudent();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const checkStudentExistence = async (studentId) => {
+      try {
+        const response = await axios.get(`/api/students/check?studentId=${studentId}`);
+        return response.data.exists;
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    };
     const deleteStudent = async (student) => {
       try {
         await axios.delete(`/api/students/${student.id}`);
@@ -146,16 +215,6 @@ export default {
       currentPage.value = page;
     };
 
-    const addStudent = async () => {
-      try {
-        await axios.post('/api/students', newStudent.value);
-        await fetchStudents();
-        cancelAddStudent();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     const cancelAddStudent = () => {
       addStudentDialogVisible.value = false;
       newStudent.value = {
@@ -184,6 +243,7 @@ export default {
       addStudentDialogVisible,
       newStudent,
       selectedStudents,
+      formRules,
       fetchStudents,
       deleteStudent,
       calculateTotalScore,

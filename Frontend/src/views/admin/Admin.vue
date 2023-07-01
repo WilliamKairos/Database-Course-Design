@@ -4,9 +4,9 @@
     <div class="main">
       <el-menu class="sidebar" router>
         <el-menu-item index="/admin/student-management">学生管理</el-menu-item>
-        <el-menu-item index="/admin/scholarship-type-management">奖学金种类管理</el-menu-item>
-        <el-menu-item index="/admin/scholarship-application-management">奖学金申请管理</el-menu-item>
-        <el-menu-item index="/admin/evaluation-result-management">评定结果管理</el-menu-item>
+        <el-menu-item index="/admin/scholarship-types">奖学金种类管理</el-menu-item>
+        <el-menu-item index="/admin/scholarship-applications">奖学金申请管理</el-menu-item>
+        <el-menu-item index="/admin/evaluation-results">评定结果管理</el-menu-item>
         <el-menu-item index="/admin/admin-management">管理员管理系统管理</el-menu-item>
       </el-menu>
       <div class="content">
@@ -18,6 +18,7 @@
 
 <script>
 export default {
+  // ...
 };
 </script>
 
