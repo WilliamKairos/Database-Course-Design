@@ -1,4 +1,3 @@
-// StudentServiceImpl.java
 package com.scholarship.service.impl;
 
 import com.scholarship.entity.Student;
@@ -32,17 +31,16 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student saveStudent(Student student) {
-        Student existingStudent = studentMapper.getStudentById(student.getId());
+        Student existingStudent = studentMapper.getStudentById(student.getStudentId());
         if (existingStudent != null) {
             studentMapper.updateStudent(student);
-            existingStudent = studentMapper.getStudentById(student.getId());
+            existingStudent = studentMapper.getStudentById(student.getStudentId());
             return existingStudent;
         } else {
             studentMapper.addStudent(student);
-            return studentMapper.getStudentById(student.getId());
+            return studentMapper.getStudentById(student.getStudentId());
         }
     }
-
 
     @Override
     public void updateStudent(Student student) {
@@ -50,19 +48,18 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void deleteStudent(int id) {
-        studentMapper.deleteStudent(id);
-        Student student = studentMapper.getStudentById(id);
+    public void deleteStudent(String studentId) {
+        studentMapper.deleteStudent(studentId);
+        Student student = studentMapper.getStudentById(studentId);
         if (student != null) {
             throw new RuntimeException("学生删除失败");
         }
     }
 
     @Override
-    public Student getStudentById(int id) {
-        return studentMapper.getStudentById(id);
+    public Student getStudentById(String studentId) {
+        return studentMapper.getStudentById(studentId);
     }
-
 
     @Override
     public List<Student> searchStudents(Student searchForm) {

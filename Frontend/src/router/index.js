@@ -13,38 +13,37 @@ const routes = [
     children: [
       {
         path: '', // 默认子路由
-        name: 'AdminDashboard',
-        component: () => import('../views/admin/AdminDashboard.vue'),
+        redirect: '/admin/student-management' // 重定向到
       },
       {
         path: '/admin/student-management',
         name: 'StudentManagement',
         component: () => import('../views/admin/StudentManagement.vue'),
-        // meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'scholarship-types',
         name: 'ScholarshipTypes',
         component: () => import('../views/admin/ScholarshipTypes.vue'),
-        // meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'scholarship-applications',
         name: 'ScholarshipApplications',
         component: () => import('../views/admin/ScholarshipApplications.vue'),
-        // meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'evaluation-results',
         name: 'EvaluationResults',
         component: () => import('../views/admin/EvaluationResults.vue'),
-        // meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       },
       {
         path: 'admin-management',
         name: 'AdminManagement',
         component: () => import('../views/admin/AdminManagement.vue'),
-        // meta: { requiresAuth: true }
+        meta: { requiresAuth: true }
       }
     ]
   },

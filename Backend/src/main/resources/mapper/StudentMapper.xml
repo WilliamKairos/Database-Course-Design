@@ -17,15 +17,15 @@
     <update id="updateStudent">
         UPDATE students SET student_id = #{studentId}, name = #{name},
                             gender = #{gender}, phone_number = #{phoneNumber}, email = #{email}, grade = #{grade},
-                            major = #{major} WHERE id = #{id}
+                            major = #{major} WHERE student_id = #{studentId}
     </update>
 
     <delete id="deleteStudent">
-        DELETE FROM students WHERE id = #{id}
+        DELETE FROM students WHERE student_id = #{studentId}
     </delete>
 
     <select id="getStudentById" resultType="com.scholarship.entity.Student">
-        SELECT * FROM students WHERE id = #{id}
+        SELECT * FROM students WHERE student_id = #{studentId}
     </select>
     <select id="searchStudents" resultType="com.scholarship.entity.Student">
         SELECT * FROM students

@@ -40,8 +40,6 @@ public class StudentController {
         }
     }
 
-
-
     @PostMapping("/saveStudent")
     public ResponseEntity<Result<Student>> saveStudent(@RequestBody Student student) {
         try {
@@ -53,17 +51,15 @@ public class StudentController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Result<Student>> updateStudent(@PathVariable("id") int id, @RequestBody Student updatedStudent) {
+    @PutMapping("/{studentId}")
+    public ResponseEntity<Result<Student>> updateStudent(@PathVariable("studentId") String studentId, @RequestBody Student updatedStudent) {
         try {
-            Student student = studentService.getStudentById(id);
+            Student student = studentService.getStudentById(studentId);
             if (student == null) {
                 return new ResponseEntity<>(new Result<>(404, "学生不存在", null), HttpStatus.NOT_FOUND);
             }
 
-            System.out.println(updatedStudent);
             // 更新学生信息
-            student.setStudentId(updatedStudent.getStudentId());
             student.setName(updatedStudent.getName());
             student.setGender(updatedStudent.getGender());
             student.setPhoneNumber(updatedStudent.getPhoneNumber());
@@ -80,19 +76,18 @@ public class StudentController {
         }
     }
 
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Result<Object>> deleteStudent(@PathVariable("id") int id) {
+    @DeleteMapping("/{studentId}")
+    public ResponseEntity<Result<Object>> deleteStudent(@PathVariable("studentId") String studentId) {
         try {
-            Student student = studentService.getStudentById(id);
+            Student student = studentService.getStudentById(studentId);
             if (student == null) {
                 return new ResponseEntity<>(new Result<>(404, "学生不存在", null), HttpStatus.NOT_FOUND);
             }
 
-            studentService.deleteStudent(id);
+            studentService.deleteStudent(studentId);
 
             return new ResponseEntity<>(new Result<>(200, "学生已删除", null), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (Exception         e) {
             e.printStackTrace();
             return new ResponseEntity<>(new Result<>(500, "删除学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -110,3 +105,4 @@ public class StudentController {
     }
 
 }
+

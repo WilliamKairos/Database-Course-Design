@@ -48,7 +48,11 @@
           <el-input v-model="editForm.email"></el-input>
         </el-form-item>
         <el-form-item label="年级" prop="grade">
-          <el-input v-model="editForm.grade"></el-input>
+          <el-select v-model="editForm.grade" placeholder="请选择年级">
+            <el-option label="研一年级" value="研一年级"></el-option>
+            <el-option label="研二年级" value="研二年级"></el-option>
+            <el-option label="研三年级" value="研三年级"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="专业" prop="major">
           <el-input v-model="editForm.major"></el-input>
@@ -59,6 +63,7 @@
         <el-button type="primary" @click="saveEditedStudent">保存</el-button>
       </div>
     </el-dialog>
+
 
     <el-dialog v-model="deleteConfirmVisible" title="确认删除学生" :visible.sync="deleteConfirmVisible" width="30%">
       <p>确定要删除该学生吗？</p>
@@ -89,7 +94,11 @@
           <el-input v-model="addForm.email"></el-input>
         </el-form-item>
         <el-form-item label="年级" prop="grade">
-          <el-input v-model="addForm.grade"></el-input>
+          <el-select v-model="addForm.grade" placeholder="请选择年级">
+            <el-option label="研一年级" value="研一年级"></el-option>
+            <el-option label="研二年级" value="研二年级"></el-option>
+            <el-option label="研三年级" value="研三年级"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="专业" prop="major">
           <el-input v-model="addForm.major"></el-input>
@@ -122,7 +131,11 @@
           <el-input v-model="searchForm.email"></el-input>
         </el-form-item>
         <el-form-item label="年级" prop="grade">
-          <el-input v-model="searchForm.grade"></el-input>
+          <el-select v-model="searchForm.grade" placeholder="请选择年级">
+            <el-option label="研一年级" value="研一年级"></el-option>
+            <el-option label="研二年级" value="研二年级"></el-option>
+            <el-option label="研三年级" value="研三年级"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="专业" prop="major">
           <el-input v-model="searchForm.major"></el-input>
@@ -391,7 +404,7 @@ export default {
         gender: searchForm.value.gender,
         phoneNumber: searchForm.value.phoneNumber,
         email: searchForm.value.email,
-        grade: searchForm.value.grade,
+        grade: searchForm.value.grade ? searchForm.value.grade : undefined, // 判断年级是否为空，如果为空则传递undefined
         major: searchForm.value.major,
       };
 
@@ -414,6 +427,7 @@ export default {
             console.error(error);
           });
     };
+
 
     getStudents();
 

@@ -1,117 +1,195 @@
 <template>
-  <div>
-    <el-table :data="scholarshipApplications" style="width: 100%">
-      <el-table-column prop="applicationId" label="申请编号" width="120"></el-table-column>
-      <el-table-column prop="studentId" label="学号" width="120"></el-table-column>
-      <el-table-column prop="studentName" label="学生姓名" width="120"></el-table-column>
-      <el-table-column prop="grade" label="年级" width="80"></el-table-column>
-      <el-table-column prop="major" label="专业" width="120"></el-table-column>
-      <el-table-column prop="scholarshipType" label="奖学金种类" width="150"></el-table-column>
-      <el-table-column prop="applicationTime" label="申请时间" width="180"></el-table-column>
-      <el-table-column prop="isReviewed" label="是否审核" width="100"></el-table-column>
-      <el-table-column prop="reviewReply" label="审核回复" width="200"></el-table-column>
-      <el-table-column label="申请材料" width="120">
-        <template #default="{row}">
-          <el-button @click="downloadApplicationMaterials(row)">下载</el-button>
+  <div class="container">
+    <el-table :data="students" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55"></el-table-column>
+      <el-table-column label="学生姓名">
+        <template #default="{ row }">
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="180">
-        <template #default="{row}">
-          <el-button @click="showReviewDialog(row)">审核</el-button>
-          <el-button @click="showEditDialog(row)">修改</el-button>
-          <el-button type="danger" @click="deleteApplication(row)">删除</el-button>
+      <el-table-column prop="studentId" label="学号"></el-table-column>
+      <el-table-column prop="academicScore" label="学业成绩"></el-table-column>
+      <el-table-column prop="ideologyScore" label="思政表现"></el-table-column>
+      <el-table-column prop="researchScore" label="科研能力"></el-table-column>
+      <el-table-column prop="socialScore" label="社会服务"></el-table-column>
+      <el-table-column label="总分">
+        <template #default="{ row }">
+          <span>{{ calculateTotalScore(row) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template #default="{ row }">
+          <el-button type="danger" size="mini" @click="deleteStudent(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-
     <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
-        :page-sizes="[10, 20, 30, 40]"
+        :page-sizes="[10, 20, 30]"
         :page-size="pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="totalItems">
-    </el-pagination>
+        :total="students.length"
+    ></el-pagination>
 
-    <el-dialog :visible.sync="reviewDialogVisible" title="审核申请">
-      <el-form :model="reviewForm" label-width="120px">
-        <!-- 添加表单输入框，如el-input，绑定到reviewForm -->
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="reviewDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitReviewForm">确 定</el-button>
-      </span>
-    </el-dialog>
+    <div class="button-group">
+      <el-button type="text" @click="fetchStudents('grade1')">研一年级</el-button>
+      <el-button type="text" @click="fetchStudents('grade2')">研二年级</el-button>
+      <el-button type="text" @click="fetchStudents('grade3')">研三年级</el-button>
+      <el-button type="text" @click="showAddStudentDialog">添加学生</el-button>
+    </div>
 
-    <el-dialog :visible.sync="editDialogVisible" title="编辑申请">
-      <el-form :model="editForm" label-width="120px">
-        <!-- 添加表单输入框，如el-input，绑定到editForm -->
+    <el-dialog v-model="addStudentDialogVisible" title="添加申请学生">
+      <el-form :model="newStudent" label-width="100px" class="add-student-form">
+        <el-form-item label="学生姓名">
+          <el-input v-model="newStudent.name"></el-input>
+        </el-form-item>
+        <el-form-item label="学号">
+          <el-input v-model="newStudent.studentId"></el-input>
+        </el-form-item>
+        <el-form-item label="学业成绩">
+          <el-input-number v-model="newStudent.academicScore" :min="0" :max="20"></el-input-number>
+        </el-form-item>
+        <el-form-item label="思政表现">
+          <el-input-number v-model="newStudent.ideologyScore" :min="0" :max="30"></el-input-number>
+        </el-form-item>
+        <el-form-item label="科研能力">
+          <el-input-number v-model="newStudent.researchScore" :min="0" :max="30"></el-input-number>
+        </el-form-item>
+        <el-form-item label="社会服务">
+          <el-input-number v-model="newStudent.socialScore" :min="0" :max="20"></el-input-number>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addStudent">确认</el-button>
+          <el-button @click="cancelAddStudent">取消</el-button>
+        </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type
-                       ="primary" @click="submitEditForm">确 定</el-button>
-      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
+import { ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber } from 'element-plus';
+import axios from 'axios';
+
 export default {
+  components: {
+    ElTable,
+    ElTableColumn,
+    ElButton,
+    ElPagination,
+    ElDialog,
+    ElForm,
+    ElFormItem,
+    ElInput,
+    ElInputNumber,
+  },
+  name: 'StudentList',
   data() {
     return {
-      scholarshipApplications: [], // 奖学金申请数据
-      totalItems: 0,
-      pageSize: 10,
+      students: [],
+      loading: false,
       currentPage: 1,
-      reviewDialogVisible: false,
-      editDialogVisible: false,
-      reviewForm: {},
-      editForm: {},
+      pageSize: 10,
+      addStudentDialogVisible: false,
+      newStudent: {
+        name: '',
+        studentId: '',
+        academicScore: 0,
+        ideologyScore: 0,
+        researchScore: 0,
+        socialScore: 0,
+      },
+      selectedStudents: [],
     };
   },
-  methods: {
-    handleSizeChange(newSize) {
-      this.pageSize = newSize;
-      // 可能需要重新获取数据
-    },
-    handleCurrentChange(newPage) {
-      this.currentPage = newPage;
-      // 可能需要重新获取数据
-    },
-    downloadApplicationMaterials(row) {
-      // 在这里实现下载申请材料的功能
-    },
-    showReviewDialog(row) {
-      this.reviewForm = { ...row };
-      this.reviewDialogVisible = true;
-    },
-    submitReviewForm() {
-      // 在这里实现提交审核表单的功能
-      this.reviewDialogVisible = false;
-    },
-    showEditDialog(row) {
-      this.editForm = { ...row };
-      this.editDialogVisible = true;
-    },
-    submitEditForm() {
-      // 在这里实现提交编辑表单的功能
-      this.editDialogVisible = false;
-    },
-    deleteApplication(row) {
-      // 在这里实现删除申请的功能
-    }
-  },
   mounted() {
-    // 在这里获取初始奖学金申请数据
-    // 假设从API或其他来源获取数据
-    // this.scholarshipApplications = ...;
-    // this.totalItems = ...;
-  }
+    this.fetchStudents('grade1');
+  },
+  methods: {
+    async fetchStudents(grade) {
+      try {
+        this.loading = true;
+        const response = await axios.get(`/api/students?grade=${grade}`);
+        this.students = response.data;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async deleteStudent(student) {
+      try {
+        await axios.delete(`/api/students/${student.id}`);
+        this.students = this.students.filter((s) => s.id !== student.id);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    calculateTotalScore(student) {
+      return (
+          student.academicScore +
+          student.ideologyScore +
+          student.researchScore +
+          student.socialScore
+      );
+    },
+    handleSelectionChange(selectedItems) {
+      this.selectedStudents = selectedItems;
+    },
+    handleSizeChange(pageSize) {
+      this.currentPage = 1;
+      this.pageSize = pageSize;
+    },
+    handleCurrentChange(page) {
+      this.currentPage = page;
+    },
+    async addStudent() {
+      try {
+        await axios.post('/api/students', this.newStudent);
+        this.fetchStudents();
+        this.cancelAddStudent();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    cancelAddStudent() {
+      this.addStudentDialogVisible = false;
+      this.newStudent = {
+        name: '',
+        studentId: '',
+        academicScore: 0,
+        ideologyScore: 0,
+        researchScore: 0,
+        socialScore: 0,
+      };
+    },
+    showAddStudentDialog() {
+      this.addStudentDialogVisible = true;
+    },
+  },
 };
 </script>
 
-<style>
-/* 你可以在这里添加一些样式来使页面看起来更好 */
+<style scoped>
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.button-group {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.el-pagination {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.add-student-form {
+  margin-top: 20px;
+}
 </style>

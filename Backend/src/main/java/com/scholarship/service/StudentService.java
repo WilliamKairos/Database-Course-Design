@@ -1,4 +1,3 @@
-// StudentService.java
 package com.scholarship.service;
 
 import com.scholarship.entity.Student;
@@ -11,11 +10,10 @@ public interface StudentService {
     int getTotalStudents();
 
     Student saveStudent(Student student);
-    Student getStudentById(int id);
-
+    Student getStudentById(String studentId); // 改变参数类型为String
 
     void updateStudent(Student student);
 
-    void deleteStudent(int id);
+    void deleteStudent(String studentId); // 改变参数类型为String
 
 }
