@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ApplicantMapper.xml -->
+<mapper namespace="com.scholarship.mapper.ApplicantMapper">
+
+    <select id="getApplicantsByGrade" resultType="com.scholarship.entity.Applicant">
+        SELECT * FROM applicant WHERE grade = #{grade}
+    </select>
+
+    <delete id="deleteApplicant">
+        DELETE FROM applicant WHERE student_id = #{studentId}
+    </delete>
+
+    <!-- Add any other necessary SQL statements -->
+
+</mapper>
