@@ -57,6 +57,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Student searchStudentById(String searchId) {
+        return studentMapper.getStudentById(searchId);
+    }
+
+    @Override
     public Student getStudentById(String studentId) {
         return studentMapper.getStudentById(studentId);
     }

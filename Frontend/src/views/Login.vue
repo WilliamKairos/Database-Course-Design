@@ -1,60 +1,79 @@
 <template>
   <div class="login-container">
-    <div class="radio-group">
-      <label>
-        <input type="radio" value="student" v-model="userType"/> 学生
-      </label>
-      <label>
-        <input type="radio" value="admin" v-model="userType"/> 管理员
-      </label>
+    <h1 class="title">高校奖学金系统</h1>
+    <div class="login-form">
+      <el-input v-model="username" placeholder="请输入账号" class="input-field"></el-input>
+      <el-input v-model="password" placeholder="请输入密码" show-password class="input-field"></el-input>
+      <div class="login-button-container">
+        <el-button type="primary" @click="login" class="login-button">登录</el-button>
+      </div>
     </div>
-    <el-input placeholder="请输入账号" v-model="username" class="input-field"></el-input>
-    <el-input placeholder="请输入密码" v-model="password" show-password class="input-field"></el-input>
-    <el-button type="primary" @click="login">登录</el-button>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRoute, useRouter } from 'vue-router';
 
 export default {
-  data() {
-    return {
-      username: '',
-      password: '',
-      userType: 'student',
-    };
-  },
-  methods: {
-    async login() {
+  setup() {
+    const username = ref('');
+    const password = ref('');
+    const route = useRoute();
+    const router = useRouter();
+
+    const login = async () => {
       try {
-        const response = await axios.post('http://localhost:8080/login', {
-          username: this.username,
-          password: this.password
-        });
+        const response = await axios.post(
+            'http://localhost:8080/login/login',
+            {
+              username: username.value,
+              password: password.value,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+        );
 
         if (response.status === 200) {
           // 登录成功
-          const user = response.data; // 获取用户信息
-          localStorage.setItem('userType', this.userType);
-          const redirect = this.$route.query.redirect;
+          const user = response.data.data; // 获取用户信息
+          console.log(user);
+          localStorage.setItem('userType', user.userType);
+          localStorage.setItem('studentId', user.id);
 
-          if (this.userType === 'admin') {
-            this.$router.push(redirect || '/admin');
+          console.log(localStorage.getItem('studentId'))
+
+          const redirect = route.query.redirect;
+
+          if (user.userType === 'admin') {
+            router.push(redirect || '/admin');
           } else {
-            this.$router.push(redirect || '/student/profile');
+            router.push(redirect || '/student/profile');
           }
         } else {
           // 登录失败
-          alert('Login failed');
+          alert('登录失败');
         }
       } catch (error) {
         console.error(error);
-        alert('An error occurred');
-
+        if (error.response && error.response.status === 401) {
+          alert('登录失败');
+        } else {
+          alert('发生错误');
+        }
       }
-    }
-  }
+    };
+
+    return {
+      username,
+      password,
+      login,
+    };
+  },
 };
 </script>
 
@@ -67,11 +86,27 @@ export default {
   flex-direction: column;
 }
 
-.radio-group {
-  margin-bottom: 10px;
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
 }
 
 .input-field {
   width: 200px;
+  margin-bottom: 10px;
+}
+
+.login-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.login-button {
+  width: 100px;
 }
 </style>

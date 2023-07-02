@@ -104,5 +104,18 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/info")
+    public ResponseEntity<Result<Student>> searchStudentById(@RequestBody Student searchId) {
+        try {
+            System.out.println(searchId.getStudentId());
+            Student students = studentService.searchStudentById(searchId.getStudentId());
+            System.out.println(students);
+            return new ResponseEntity<>(new Result<>(200, "成功查询学生", students), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(new Result<>(500, "查询学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
 

@@ -47,8 +47,8 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
-    public User findUser(String username, String password, String UserType) {
-        return userMapper.findUser(username, password, UserType);
+    public User findUser(String username, String password) {
+        return userMapper.findUser(username, password);
     }
 
 }

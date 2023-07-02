@@ -16,4 +16,6 @@ public interface StudentService {
 
     void deleteStudent(String studentId); // 改变参数类型为String
 
+    Student searchStudentById(String searchId);
+
 }

@@ -22,29 +22,11 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
-        path: 'scholarship-types',
-        name: 'ScholarshipTypes',
-        component: () => import('../views/admin/ScholarshipTypes.vue'),
-        meta: { requiresAuth: true }
-      },
-      {
         path: 'scholarship-applications',
         name: 'ScholarshipApplications',
         component: () => import('../views/admin/ScholarshipApplications.vue'),
         meta: { requiresAuth: true }
       },
-      {
-        path: 'evaluation-results',
-        name: 'EvaluationResults',
-        component: () => import('../views/admin/EvaluationResults.vue'),
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'admin-management',
-        name: 'AdminManagement',
-        component: () => import('../views/admin/AdminManagement.vue'),
-        meta: { requiresAuth: true }
-      }
     ]
   },
   {
@@ -60,17 +42,14 @@ const routes = [
       {
         path: 'profile',
         name: 'StudentProfile',
-        component: () => import('../views/student/StudentProfile.vue')
-      },
-      {
-        path: 'scholarship-projects',
-        name: 'ScholarshipProjects',
-        component: () => import('../views/student/ScholarshipProjects.vue')
+        component: () => import('../views/student/StudentProfile.vue'),
+        meta: { requiresAuth: true }
       },
       {
         path: 'scholarship-application',
         name: 'ScholarshipApplication',
-        component: () => import('../views/student/ScholarshipApplication.vue')
+        component: () => import('../views/student/ScholarshipApplication.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   }
