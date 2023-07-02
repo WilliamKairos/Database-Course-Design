@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ScholarshipApplicationMapper.xml -->
+
+<mapper namespace="com.scholarship.mapper.ScholarshipApplicationMapper">
+
+    <insert id="insertScholarshipApplication" parameterType="com.scholarship.entity.ScholarshipApplication">
+        INSERT INTO applicant (student_id, name, grade, major, scholarship_type, application_date)
+        VALUES (#{studentId}, #{name}, #{grade}, #{major}, #{scholarshipType}, #{applicationDate})
+    </insert>
+
+</mapper>
+

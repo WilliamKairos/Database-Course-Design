@@ -1,7 +1,6 @@
 package com.scholarship.service.impl;
 
 import com.scholarship.entity.Applicant;
-import com.scholarship.mapper.ApplicantMapper;
 import com.scholarship.service.ApplicantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
