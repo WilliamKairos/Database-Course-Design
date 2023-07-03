@@ -33,6 +33,9 @@
         <el-button type="primary" @click="submitForm('form')">提交</el-button>
       </el-form-item>
     </el-form>
+    <el-dialog title="提示" :visible.sync="showDialog">
+      <p>研一年级暂时无法申请奖学金。</p>
+    </el-dialog>
   </div>
 </template>
 
@@ -56,6 +59,7 @@ export default {
         // applicationMaterial: [{ required: true, message: '请上传申请材料', trigger: 'change' }],
         applicationDate: [{ required: true, message: '请选择申请时间', trigger: 'change' }],
       },
+      showDialog: false, // 弹窗显示控制
     };
   },
   created() {
@@ -64,7 +68,6 @@ export default {
   methods: {
     fetchStudentInfo() {
       const studentId = localStorage.getItem('studentId');
-      console.log(studentId)
       axios
           .post('http://localhost:8080/api/students/info', { studentId })
           .then((response) => {
@@ -73,42 +76,57 @@ export default {
             this.form.name = student.name;
             this.form.grade = student.grade;
             this.form.major = student.major;
+
+            // 判断学生年级，如果是研一年级，显示弹窗
+            if (student.grade === '研一年级') {
+              this.showDialog = true;
+            }
           })
           .catch((error) => {
             console.error(error);
           });
     },
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          const formData = {
-            studentId: this.form.studentId,
-            name: this.form.name,
-            grade: this.form.grade,
-            major: this.form.major,
-            scholarshipType: this.form.scholarshipType,
-            applicationMaterial: this.form.applicationMaterial,
-            applicationDate: this.form.applicationDate,
-          };
 
-          axios
-              .post('http://localhost:8080/api/applicants/apply', formData)
-              .then((response) => {
-                if (response.status === 200 && response.data.code === 200) {
-                  // 提交成功，可以根据返回的数据做相应处理
-                } else {
-                  console.error('Error while submitting form:', response);
-                }
-              })
-              .catch((error) => {
-                console.error(error);
-              });
-        } else {
-          console.log('表单校验失败');
-          return false;
-        }
-      });
+    submitForm(formName) {
+      if (this.form.grade === '研一年级') {
+        // 学生是研一年级，点击提交时显示弹窗
+        this.$nextTick(() => {
+          this.showDialog = true;
+        });
+      } else {
+        // 学生不是研一年级，执行提交表单的操作
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            const formData = {
+              studentId: this.form.studentId,
+              name: this.form.name,
+              grade: this.form.grade,
+              major: this.form.major,
+              scholarshipType: this.form.scholarshipType,
+              applicationMaterial: this.form.applicationMaterial,
+              applicationDate: this.form.applicationDate,
+            };
+
+            axios
+                .post('http://localhost:8080/api/applicants/apply', formData)
+                .then((response) => {
+                  if (response.status === 200 && response.data.code === 200) {
+                    // 提交成功，可以根据返回的数据做相应处理
+                  } else {
+                    console.error('Error while submitting form:', response);
+                  }
+                })
+                .catch((error) => {
+                  console.error(error);
+                });
+          } else {
+            console.log('表单校验失败');
+            return false;
+          }
+        });
+      }
     },
+
     handleUploadSuccess(response, file) {
       // 处理文件上传成功的情况
     },
