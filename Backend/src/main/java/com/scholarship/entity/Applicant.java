@@ -6,6 +6,7 @@ import lombok.Data;
 public class Applicant {
     private String studentId;
     private String name;
+    private String grade;
     private Integer academicScore;
     private Integer ideologyScore;
     private Integer researchScore;

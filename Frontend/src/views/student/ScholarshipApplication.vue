@@ -53,7 +53,7 @@ export default {
       },
       rules: {
         scholarshipType: [{ required: true, message: '请选择奖学金种类', trigger: 'change' }],
-        applicationMaterial: [{ required: true, message: '请上传申请材料', trigger: 'change' }],
+        // applicationMaterial: [{ required: true, message: '请上传申请材料', trigger: 'change' }],
         applicationDate: [{ required: true, message: '请选择申请时间', trigger: 'change' }],
       },
     };
@@ -92,7 +92,7 @@ export default {
           };
 
           axios
-              .post('http://localhost:8080/api/scholarships/apply', formData)
+              .post('http://localhost:8080/api/applicants/apply', formData)
               .then((response) => {
                 if (response.status === 200 && response.data.code === 200) {
                   // 提交成功，可以根据返回的数据做相应处理

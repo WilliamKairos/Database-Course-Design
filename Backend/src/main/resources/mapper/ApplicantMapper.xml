@@ -12,5 +12,9 @@
     </delete>
 
     <!-- Add any other necessary SQL statements -->
+    <insert id="saveScholarship">
+        INSERT INTO applicant (student_id, name, grade, scholarshipType, applicationTime)
+        VALUES (#{param1.studentId}, #{param1.name}, #{param1.grade}, #{param1.scholarshipType}, #{param1.applicationTime})
+    </insert>
 
 </mapper>
