@@ -66,6 +66,7 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-aop:6.0.10" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context:6.0.10" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:6.0.10" level="project" />
+    <orderEntry type="library" name="Maven: org.json:json:20230227" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-core:5.6.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging:3.5.1.Final" level="project" />
     <orderEntry type="library" name="Maven: javax.persistence:javax.persistence-api:2.2" level="project" />

@@ -13,5 +13,5 @@ public interface ApplicantMapper {
     void deleteApplicant(@Param("studentId") String studentId);
 
     // Add any other necessary methods
-    void saveScholarship(@Param("request") Applicant request);
+    void saveScholarship(@Param("param1") Applicant request);
 }

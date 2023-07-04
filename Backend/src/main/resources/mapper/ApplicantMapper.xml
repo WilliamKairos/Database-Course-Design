@@ -11,10 +11,17 @@
         DELETE FROM applicant WHERE student_id = #{studentId}
     </delete>
 
-    <!-- Add any other necessary SQL statements -->
     <insert id="saveScholarship">
-        INSERT INTO applicant (student_id, name, grade, scholarshipType, applicationTime)
-        VALUES (#{param1.studentId}, #{param1.name}, #{param1.grade}, #{param1.scholarshipType}, #{param1.applicationTime})
+        INSERT INTO applicant
+        (student_id, name, grade, scholarshipType, applicationTime, applicationMaterial)
+        VALUES
+            (
+                #{param1.studentId},
+                #{param1.name},
+                #{param1.grade},
+                #{param1.scholarshipType},
+                #{param1.applicationTime},
+                #{param1.applicationMaterial,jdbcType=VARCHAR}
+            )
     </insert>
-
 </mapper>
