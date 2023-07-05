@@ -14,4 +14,8 @@ public interface ApplicantMapper {
 
     // Add any other necessary methods
     void saveScholarship(@Param("param1") Applicant request);
+
+    void updateApprovalStatus(@Param("param1") Applicant request);
+
+    void updateStudentScores(@Param("param1") Applicant request);
 }

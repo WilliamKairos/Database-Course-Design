@@ -59,7 +59,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="不通过理由" v-show="newStudent.approvalStatus === '不通过'">
-          <el-input v-model="newStudent.rejectionReason" placeholder="请输入不通过理由"></el-input>
+          <el-input v-model="newStudent.reason" placeholder="请输入不通过理由"></el-input>
         </el-form-item>
         <div style="text-align: center">
           <el-button type="primary" @click="submitApproval">确定</el-button>
@@ -77,17 +77,20 @@
     <el-dialog v-model="scoreDialogVisible" title="评分" width="30%">
       <el-form>
         <el-form-item label="学业成绩">
-          <el-input-number v-model="currentStudent.academicScore" :disabled="!currentStudent.academicScoreEditable" :min="0" :max="20"></el-input-number>
+          <el-input-number v-model="currentStudent.academicScore" :disabled="!currentStudent.academicScoreEditable" :min="0" :max="20" @input="handleScoreInput('academicScore', $event)"></el-input-number>
         </el-form-item>
         <el-form-item label="思政表现">
-          <el-input-number v-model="currentStudent.ideologyScore"></el-input-number>
+          <el-input-number v-model="currentStudent.ideologyScore" :min="0" :max="30" @input="handleScoreInput('ideologyScore', $event)"></el-input-number>
         </el-form-item>
+
         <el-form-item label="科研能力">
-          <el-input-number v-model="currentStudent.researchScore"></el-input-number>
+          <el-input-number v-model="currentStudent.researchScore" :min="0" :max="currentStudent.grade === 'grade3' ? 50 : 30" @input="handleScoreInput('researchScore', $event)"></el-input-number>
         </el-form-item>
+
         <el-form-item label="社会服务">
-          <el-input-number v-model="currentStudent.socialScore"></el-input-number>
+          <el-input-number v-model="currentStudent.socialScore" :min="0" :max="20" @input="handleScoreInput('socialScore', $event)"></el-input-number>
         </el-form-item>
+
         <div style="text-align: center">
           <el-button type="primary" @click="submitScores">确定</el-button>
           <el-button @click="scoreDialogVisible = false">取消</el-button>
@@ -156,9 +159,33 @@ export default {
       researchScore: 0,
       socialScore: 0,
     });
+    const handleScoreInput = (field, value) => {
+      // 根据字段获取对应的分数上限
+      let scoreLimit = 0;
+      if (field === 'academicScore') {
+        scoreLimit = currentStudent.grade === 'grade2' ? 20 : 0;
+      } else if (field === 'ideologyScore') {
+        scoreLimit = 30;
+      } else if (field === 'researchScore') {
+        scoreLimit = currentStudent.grade === 'grade3' ? 50 : 30;
+      } else if (field === 'socialScore') {
+        scoreLimit = 20;
+      }
+
+      // 根据分数上限对输入的数值进行限制和修改
+      if (value < 0 || isNaN(value)) {
+        currentStudent[field] = 0;
+      } else if (value > scoreLimit) {
+        currentStudent[field] = scoreLimit;
+      } else {
+        currentStudent[field] = value;
+      }
+    };
+
     const openScoreDialog = (student) => {
       currentStudent.name = student.name;
-      currentStudent.grade = student.grade; // 添加学生的年级信息
+      currentStudent.studentId = student.studentId; // 设置当前学生的学号
+      currentStudent.grade = student.grade; // 设置当前学生的年级信息
 
       // 根据学生年级设置评分上限和学习成绩是否可修改
       if (student.grade === 'grade2') {
@@ -193,16 +220,17 @@ export default {
         researchScoreLimit = 30;
         socialScoreLimit = 20;
       } else if (grade === 'grade3') {
+        academicScoreLimit = 0; // 学业成绩默认为0分
         ideologyScoreLimit = 30;
         researchScoreLimit = 50;
         socialScoreLimit = 20;
       }
 
       // 限制分数上限
-      currentStudent.academicScore = Math.max(currentStudent.academicScore, academicScoreLimit);
-      currentStudent.ideologyScore = Math.max(currentStudent.ideologyScore, ideologyScoreLimit);
-      currentStudent.researchScore = Math.max(currentStudent.researchScore, researchScoreLimit);
-      currentStudent.socialScore = Math.max(currentStudent.socialScore, socialScoreLimit);
+      currentStudent.academicScore = Math.min(currentStudent.academicScore, academicScoreLimit);
+      currentStudent.ideologyScore = Math.min(currentStudent.ideologyScore, ideologyScoreLimit);
+      currentStudent.researchScore = Math.min(currentStudent.researchScore, researchScoreLimit);
+      currentStudent.socialScore = Math.min(currentStudent.socialScore, socialScoreLimit);
 
       axios
           .post('http://localhost:8080/api/applicants/scores', {
@@ -213,22 +241,35 @@ export default {
             socialScore: currentStudent.socialScore,
           })
           .then(() => {
+            // 更新学生列表中对应学生的分值字段
+            students.value = students.value.map((student) => {
+              if (student.studentId === currentStudent.studentId) {
+                return {
+                  ...student,
+                  academicScore: currentStudent.academicScore,
+                  ideologyScore: currentStudent.ideologyScore,
+                  researchScore: currentStudent.researchScore,
+                  socialScore: currentStudent.socialScore,
+                };
+              }
+              return student;
+            });
+
             scoreDialogVisible.value = false;
           })
           .catch((error) => {
             console.error(error);
-            // Handle the error, display an error message, or perform any necessary actions
+            // 处理错误，显示错误消息或执行其他必要的操作
           });
-
-      scoreDialogVisible.value = false;
     };
 
+
     const showApprovalDialog = (student) => {
-      newStudent.name = student.name; // Set the name of the student for the approval dialog
-      newStudent.studentId = student.studentId; // Set the studentId for the approval dialog
-      newStudent.approvalStatus = ''; // Reset the approval status
-      newStudent.rejectionReason = ''; // Reset the rejection reason
-      addStudentDialogVisible.value = true; // Show the approval dialog
+      newStudent.name = student.name; // 设置审批对话框中的学生姓名
+      newStudent.studentId = student.studentId; // 设置审批对话框中的学生学号
+      newStudent.approvalStatus = ''; // 重置审批状态
+      newStudent.reason = ''; // 重置不通过理由
+      addStudentDialogVisible.value = true; // 显示审批对话框
     };
 
     const viewAttachments = (student) => {
@@ -238,32 +279,42 @@ export default {
     };
 
     const submitApproval = () => {
-      if (newStudent.approvalStatus === '不通过' && !newStudent.rejectionReason) {
-        // Display an error message or perform validation for the rejection reason
+      if (newStudent.approvalStatus === '不通过' && !newStudent.reason) {
+        ElMessage.error('请输入不通过理由');
         return;
       }
 
       axios
           .post('http://localhost:8080/api/applicants/approval', {
             studentId: newStudent.studentId,
-            approvalStatus: newStudent.approvalStatus,
-            rejectionReason: newStudent.rejectionReason,
+            academicEvaluation: newStudent.approvalStatus,
+            reason: newStudent.reason,
           })
           .then(() => {
-            // Reset the approval dialog fields
-            newStudent.approvalStatus = '';
-            newStudent.rejectionReason = '';
-            addStudentDialogVisible.value = false; // Close the approval dialog
+            // 重置审批对话框字段
+            // newStudent.approvalStatus = '';
+            // newStudent.reason = '';
+            addStudentDialogVisible.value = false; // 关闭审批对话框
+
+            // 更新学生列表中对应学生的教务评定字段
+            const updatedStudents = students.value.map((student) => {
+              if (student.studentId === newStudent.studentId) {
+                return {
+                  ...student,
+                  academicEvaluation: newStudent.approvalStatus,
+                };
+              }
+              return student;
+            });
+
+            students.value = updatedStudents; // 更新学生列表
           })
           .catch((error) => {
             console.error(error);
-            // Handle the error, display an error message, or perform any necessary actions
+            ElMessage.error('提交审批失败');
           });
-      // Reset the approval dialog fields
-      newStudent.approvalStatus = '';
-      newStudent.rejectionReason = '';
-      addStudentDialogVisible.value = false; // Close the approval dialog
     };
+
 
     const cancelApproval = () => {
       // Reset the approval dialog fields
@@ -332,6 +383,21 @@ export default {
       selectedStudents.value = []; // Clear the selected students array
     };
 
+    const updateStudentScores = async (studentId, academicScore, ideologyScore, researchScore, socialScore) => {
+      try {
+        await axios.post('http://localhost:8080/api/applicants/scores', {
+          studentId: studentId,
+          academicScore: academicScore,
+          ideologyScore: ideologyScore,
+          researchScore: researchScore,
+          socialScore: socialScore,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+
 
     const calculateTotalScore = (student) => {
       return (
@@ -384,6 +450,7 @@ export default {
       handleCurrentChange,
       openScoreDialog, // 添加的评分对话框方法
       submitScores, // 添加的提交评分方法
+      handleScoreInput,
       scoreDialogVisible, // 添加的评分对话框可见性变量
       currentStudent, // 添加的当前学生评分变量
     };

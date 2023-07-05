@@ -39,5 +39,16 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantMapper.saveScholarship(request);
     }
 
+    @Override
+    public void updateApprovalStatus(Applicant request) {
+        applicantMapper.updateApprovalStatus(request);
+    }
+
+    @Override
+    public void updateStudentScores(Applicant request) {
+        applicantMapper.updateStudentScores(request);
+    }
+
+
     // Add implementations for any other necessary methods
 }

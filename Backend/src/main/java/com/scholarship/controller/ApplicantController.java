@@ -175,7 +175,7 @@ public class ApplicantController {
         return "";
     }
 
-//    // 构建附件信息
+    //    // 构建附件信息
 //    private String buildApplicationMaterial(String filePath) {
 //        try {
 //            ObjectMapper objectMapper = new ObjectMapper();
@@ -185,6 +185,29 @@ public class ApplicantController {
 //        }
 //        return "";
 //    }
+    @PostMapping("/approval")
+    public ResponseEntity<Result<Void>> updateApprovalStatus(@RequestBody Applicant request) {
+        try {
+            applicantService.updateApprovalStatus(request);
 
+            return ResponseEntity.ok(new Result<>(200, "审批状态更新成功", null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Result<>(500, "审批状态更新失败", null));
+        }
+    }
 
+    @PostMapping("/scores")
+    public ResponseEntity<Result<Void>> updateStudentScores(@RequestBody Applicant request) {
+        try {
+            applicantService.updateStudentScores(request);
+
+            return ResponseEntity.ok(new Result<>(200, "学生成绩更新成功", null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Result<>(500, "学生成绩更新失败", null));
+        }
+    }
 }

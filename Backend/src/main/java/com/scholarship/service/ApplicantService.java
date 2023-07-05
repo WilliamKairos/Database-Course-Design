@@ -9,4 +9,7 @@ public interface ApplicantService {
     List<Applicant> getApplicantsByGrade(String grade);
     void deleteApplicant(String studentId);
     void applyScholarship(Applicant request);
+
+    void updateApprovalStatus(Applicant request);
+    void updateStudentScores(Applicant request);
 }

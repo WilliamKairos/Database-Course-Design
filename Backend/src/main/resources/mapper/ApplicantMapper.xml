@@ -28,4 +28,22 @@
 
             )
     </insert>
+
+    <update id="updateApprovalStatus">
+        UPDATE applicant
+        SET academicEvaluation = #{param1.academicEvaluation},
+            reason             = #{param1.reason}
+        WHERE student_id = #{param1.studentId}
+    </update>
+
+    <update id="updateStudentScores">
+        UPDATE applicant
+        SET academicScore = #{param1.academicEvaluation},
+            ideologyScore = #{param1.ideologyScore},
+            researchScore = #{param1.researchScore},
+            socialScore = #{param1.socialScore}
+        WHERE student_id = #{param1.studentId}
+    </update>
+
+
 </mapper>
