@@ -17,7 +17,7 @@
           <span>{{ calculateTotalScore(row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="ranking" label="排名"></el-table-column>
+      <el-table-column prop="totalPoints" label="积分"></el-table-column>
       <el-table-column prop="scholarshipType" label="奖学金种类"></el-table-column>
       <el-table-column prop="academicEvaluation" label="教务评定"></el-table-column>
       <el-table-column prop="applicationTime" label="申请时间"></el-table-column>
