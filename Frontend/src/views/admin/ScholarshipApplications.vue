@@ -1,464 +1,451 @@
 <template>
-  <div class="container">
-    <el-table :data="students" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column label="学生姓名">
-        <template #default="{ row }">
-          <span>{{ row.name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="studentId" label="学号"></el-table-column>
-      <el-table-column prop="academicScore" label="学业成绩"></el-table-column>
-      <el-table-column prop="ideologyScore" label="思政表现"></el-table-column>
-      <el-table-column prop="researchScore" label="科研能力"></el-table-column>
-      <el-table-column prop="socialScore" label="社会服务"></el-table-column>
-      <el-table-column label="总分">
-        <template #default="{ row }">
-          <span>{{ calculateTotalScore(row) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="ranking" label="排名"></el-table-column>
-      <el-table-column prop="scholarshipType" label="奖学金种类"></el-table-column>
-      <el-table-column prop="academicEvaluation" label="教务评定"></el-table-column>
-      <el-table-column prop="applicationTime" label="申请时间"></el-table-column>
-      <el-table-column label="操作">
-        <template #default="{ row }">
-          <el-button type="danger" size="mini" @click="deleteStudent(row)">删除</el-button>
-          <el-button type="primary" size="mini" @click="showApprovalDialog(row)">审批</el-button>
-          <el-button type="success" size="mini" @click="viewAttachments(row)">查看</el-button>
-          <el-button type="warning" size="mini" @click="openScoreDialog(row)">评分</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-sizes="[10, 20, 30]"
-        :page-size="pageSize"
-        layout="prev, pager, next, jumper, total, sizes"
-        :total="studentsTotal"
-    ></el-pagination>
-    <div class="button-group">
-      <el-button type="text" @click="fetchStudents('grade1')">研一年级</el-button>
-      <el-button type="text" @click="fetchStudents('grade2')">研二年级</el-button>
-      <el-button type="text" @click="fetchStudents('grade3')">研三年级</el-button>
-    </div>
-    <el-dialog v-model="addStudentDialogVisible" title="审批" width="30%">
-      <el-form>
-        <el-form-item label="姓名">
-          <el-input v-model="newStudent.name" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="学号">
-          <el-input v-model="newStudent.studentId" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="审批状态">
-          <el-radio-group v-model="newStudent.approvalStatus">
-            <el-radio label="通过">通过</el-radio>
-            <el-radio label="不通过">不通过</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="不通过理由" v-show="newStudent.approvalStatus === '不通过'">
-          <el-input v-model="newStudent.reason" placeholder="请输入不通过理由"></el-input>
-        </el-form-item>
-        <div style="text-align: center">
-          <el-button type="primary" @click="submitApproval">确定</el-button>
-          <el-button @click="cancelApproval">取消</el-button>
+  <div class="application-container">
+    <h2>奖学金申请</h2>
+    <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+      <el-form-item label="学号" prop="studentId">
+        <el-input v-model="form.studentId" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="姓名" prop="name">
+        <el-input v-model="form.name" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="年级" prop="grade">
+        <el-input v-model="form.grade" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="专业" prop="major">
+        <el-input v-model="form.major" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="奖学金种类" prop="scholarshipType">
+        <el-select v-model="form.scholarshipType" placeholder="请选择">
+          <el-option label="国家奖学金" value="国家奖学金"></el-option>
+          <el-option label="省级奖学金" value="省级奖学金"></el-option>
+          <el-option label="校级奖学金" value="校级奖学金"></el-option>
+        </el-select>
+      </el-form-item>
+      <!-- 论文表 -->
+      <el-form-item label="论文表">
+        <el-table :data="form.papers" style="width: 100%">
+          <el-table-column label="论文级别">
+            <template #default="scope">
+              <el-select v-model="scope.row.level" placeholder="请选择" @change="updatePoints(scope.row)">
+                <el-option label="一类论文" value="一类论文"></el-option>
+                <el-option label="二类论文" value="二类论文"></el-option>
+                <el-option label="三类论文" value="三类论文"></el-option>
+                <el-option label="四类论文" value="四类论文"></el-option>
+                <el-option label="五类论文" value="五类论文"></el-option>
+                <el-option label="六类论文" value="六类论文"></el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="发表杂志">
+            <template #default="scope">
+              <el-input v-model="scope.row.journal" placeholder="请输入"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="论文名称">
+            <template #default="scope">
+              <el-input v-model="scope.row.title" placeholder="请输入"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="积分">
+            <template #default="scope">
+              <el-input v-model="scope.row.points" :disabled="true"></el-input>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="buttons">
+          <el-button size="small" type="primary" @click="addPaper">添加</el-button>
+          <el-button size="small" type="success" @click="showDetails('paper')">详情</el-button>
         </div>
-      </el-form>
-    </el-dialog>
-    <el-dialog v-model="deleteConfirmationVisible" title="确认删除" width="30%">
-      <span>确定要删除该学生吗？</span>
-      <span slot="footer" class="dialog-footer">
-      <el-button @click="deleteConfirmationVisible = false">取消</el-button>
-      <el-button type="primary" @click="deleteStudentConfirmed">确认</el-button>
-    </span>
-    </el-dialog>
-    <el-dialog v-model="scoreDialogVisible" title="评分" width="30%">
-      <el-form>
-        <el-form-item label="学业成绩">
-          <el-input-number v-model="currentStudent.academicScore" :disabled="!currentStudent.academicScoreEditable" :min="0" :max="20" @input="handleScoreInput('academicScore', $event)"></el-input-number>
-        </el-form-item>
-        <el-form-item label="思政表现">
-          <el-input-number v-model="currentStudent.ideologyScore" :min="0" :max="30" @input="handleScoreInput('ideologyScore', $event)"></el-input-number>
-        </el-form-item>
+      </el-form-item>
 
-        <el-form-item label="科研能力">
-          <el-input-number v-model="currentStudent.researchScore" :min="0" :max="currentStudent.grade === 'grade3' ? 50 : 30" @input="handleScoreInput('researchScore', $event)"></el-input-number>
-        </el-form-item>
-
-        <el-form-item label="社会服务">
-          <el-input-number v-model="currentStudent.socialScore" :min="0" :max="20" @input="handleScoreInput('socialScore', $event)"></el-input-number>
-        </el-form-item>
-
-        <div style="text-align: center">
-          <el-button type="primary" @click="submitScores">确定</el-button>
-          <el-button @click="scoreDialogVisible = false">取消</el-button>
+      <!-- 竞赛表 -->
+      <el-form-item label="竞赛表">
+        <el-table :data="form.competitions" style="width: 100%">
+          <el-table-column label="竞赛级别">
+            <template #default="scope">
+              <el-select v-model="scope.row.level" placeholder="请选择" @change="updateCompetitionPoints(scope.row)">
+                <el-option label="国家级A1" value="国家级A1"></el-option>
+                <el-option label="国家级A2" value="国家级A2"></el-option>
+                <el-option label="国家级A3" value="国家级A3"></el-option>
+                <el-option label="省级A1" value="省级A1"></el-option>
+                <el-option label="省级A2" value="省级A2"></el-option>
+                <el-option label="省级A3" value="省级A3"></el-option>
+                <el-option label="市级A1" value="市级A1"></el-option>
+                <el-option label="市级A2" value="市级A2"></el-option>
+                <el-option label="市级A3" value="市级A3"></el-option>
+                <el-option label="校级" value="校级"></el-option>
+                <el-option label="CCF" value="CCF"></el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="竞赛名称">
+            <template #default="scope">
+              <el-input v-model="scope.row.name" placeholder="请输入"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="获奖级别">
+            <template #default="scope">
+              <el-select v-model="scope.row.awardLevel" placeholder="请选择" @change="updateCompetitionPoints(scope.row)">
+                <el-option label="一等奖" value="一等奖"></el-option>
+                <el-option label="二等奖" value="二等奖"></el-option>
+                <el-option label="三等奖" value="三等奖"></el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="积分">
+            <template #default="scope">
+              <el-input v-model="scope.row.points" :disabled="true"></el-input>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="buttons">
+          <el-button size="small" type="primary" @click="addCompetition">添加</el-button>
+          <el-button size="small" type="success" @click="showDetails('competition')">详情</el-button>
         </div>
-      </el-form>
+      </el-form-item>
+      <div class="total-points">总积分: {{ calculateTotalPoints() }}</div>
+      <el-form-item label="申请材料" prop="applicationMaterial">
+        <el-upload
+            action="http://localhost:8080/api/applicants/upload"
+            :on-success="handleUploadSuccess"
+            :file-list="fileList"
+            multiple
+        >
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+      </el-form-item>
+      <el-form-item label="申请时间" prop="applicationTime">
+        <el-date-picker v-model="form.applicationTime" type="date" placeholder="选择日期"></el-date-picker>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="checkGradeAndSubmitForm">提交</el-button>
+      </el-form-item>
+    </el-form>
+    <el-dialog title="提示" :visible.sync="showDialog">
+      <p>研一年级暂时无法申请奖学金。</p>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, watch, onBeforeUnmount } from 'vue';
-
-import {
-  ElTable,
-  ElTableColumn,
-  ElButton,
-  ElPagination,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElInputNumber,
-  ElMessage,
-  ElMessageBox
-} from 'element-plus';
+import { ref, reactive, onMounted, watchEffect, getCurrentInstance, inject, } from 'vue';
+import { ElMessage } from 'element-plus';
 import axios from 'axios';
 
 export default {
-  components: {
-    ElTable,
-    ElTableColumn,
-    ElButton,
-    ElPagination,
-    ElDialog,
-    ElForm,
-    ElFormItem,
-    ElInput,
-    ElInputNumber,
-    ElMessageBox,
-  },
-  name: 'StudentList',
   setup() {
-    const students = ref([]);
-    const studentsTotal = ref(0);
-    const loading = ref(false);
-    const currentPage = ref(1);
-    const pageSize = ref(10);
-    const addStudentDialogVisible = ref(false);
-    const newStudent = reactive({
-      name: '',
+    const form = reactive({
       studentId: '',
-      academicScore: 0,
-      ideologyScore: 0,
-      researchScore: 0,
-      socialScore: 0,
-      scholarshipType: '',
-      academicEvaluation: '',
-      ranking: '',
-      applicationTime: '',
-    });
-    const scoreDialogVisible = ref(false);
-    const currentStudent = reactive({
       name: '',
-      academicScore: 0,
-      ideologyScore: 0,
-      researchScore: 0,
-      socialScore: 0,
+      grade: '',
+      major: '',
+      scholarshipType: '',
+      applicationMaterial: [],
+      applicationTime: '',
+      papers: [], // 论文表数据
+      competitions: [], // 竞赛表数据
+      totalPoints: 0
     });
-    const handleScoreInput = (field, value) => {
-      // 根据字段获取对应的分数上限
-      let scoreLimit = 0;
-      if (field === 'academicScore') {
-        scoreLimit = currentStudent.grade === 'grade2' ? 20 : 0;
-      } else if (field === 'ideologyScore') {
-        scoreLimit = 30;
-      } else if (field === 'researchScore') {
-        scoreLimit = currentStudent.grade === 'grade3' ? 50 : 30;
-      } else if (field === 'socialScore') {
-        scoreLimit = 20;
-      }
+    const app = getCurrentInstance();
+    const rules = reactive({
+      scholarshipType: [{required: true, message: '请选择奖学金种类', trigger: 'change'}],
+      applicationTime: [{required: true, message: '请选择申请时间', trigger: 'change'}],
+    });
+    const formRef = ref();
+    const showDialog = ref(false);
 
-      // 根据分数上限对输入的数值进行限制和修改
-      if (value < 0 || isNaN(value)) {
-        currentStudent[field] = 0;
-      } else if (value > scoreLimit) {
-        currentStudent[field] = scoreLimit;
-      } else {
-        currentStudent[field] = value;
-      }
+    const calculateCompetitionPoints = (competition) => {
+      // 计算竞赛积分
+      const { level, awardLevel } = competition;
+      return competitionPoints[level][awardLevel] || 0;
     };
 
-    const openScoreDialog = (student) => {
-      currentStudent.name = student.name;
-      currentStudent.studentId = student.studentId; // 设置当前学生的学号
-      currentStudent.grade = student.grade; // 设置当前学生的年级信息
-
-      // 根据学生年级设置评分上限和学习成绩是否可修改
-      if (student.grade === 'grade2') {
-        currentStudent.academicScore = Math.min(student.academicScore, 20);
-        currentStudent.ideologyScore = Math.min(student.ideologyScore, 30);
-        currentStudent.researchScore = Math.min(student.researchScore, 30);
-        currentStudent.socialScore = Math.min(student.socialScore, 20);
-        currentStudent.academicScoreEditable = true; // 学习成绩不可修改
-      } else if (student.grade === 'grade3') {
-        currentStudent.academicScore = 0; // 学习成绩默认为0分
-        currentStudent.ideologyScore = Math.min(student.ideologyScore, 30);
-        currentStudent.researchScore = Math.min(student.researchScore, 50);
-        currentStudent.socialScore = Math.min(student.socialScore, 20);
-        currentStudent.academicScoreEditable = false; // 学习成绩可修改
-      }
-
-      scoreDialogVisible.value = true;
-    };
-
-
-    const submitScores = () => {
-      // 根据学生年级设置分数上限
-      const grade = currentStudent.grade;
-      let academicScoreLimit = 0;
-      let ideologyScoreLimit = 0;
-      let researchScoreLimit = 0;
-      let socialScoreLimit = 0;
-
-      if (grade === 'grade2') {
-        academicScoreLimit = 20;
-        ideologyScoreLimit = 30;
-        researchScoreLimit = 30;
-        socialScoreLimit = 20;
-      } else if (grade === 'grade3') {
-        academicScoreLimit = 0; // 学业成绩默认为0分
-        ideologyScoreLimit = 30;
-        researchScoreLimit = 50;
-        socialScoreLimit = 20;
-      }
-
-      // 限制分数上限
-      currentStudent.academicScore = Math.min(currentStudent.academicScore, academicScoreLimit);
-      currentStudent.ideologyScore = Math.min(currentStudent.ideologyScore, ideologyScoreLimit);
-      currentStudent.researchScore = Math.min(currentStudent.researchScore, researchScoreLimit);
-      currentStudent.socialScore = Math.min(currentStudent.socialScore, socialScoreLimit);
-
-      axios
-          .post('http://localhost:8080/api/applicants/scores', {
-            studentId: currentStudent.studentId,
-            academicScore: currentStudent.academicScore,
-            ideologyScore: currentStudent.ideologyScore,
-            researchScore: currentStudent.researchScore,
-            socialScore: currentStudent.socialScore,
-          })
-          .then(() => {
-            // 更新学生列表中对应学生的分值字段
-            students.value = students.value.map((student) => {
-              if (student.studentId === currentStudent.studentId) {
-                return {
-                  ...student,
-                  academicScore: currentStudent.academicScore,
-                  ideologyScore: currentStudent.ideologyScore,
-                  researchScore: currentStudent.researchScore,
-                  socialScore: currentStudent.socialScore,
-                };
-              }
-              return student;
-            });
-
-            scoreDialogVisible.value = false;
-          })
-          .catch((error) => {
-            console.error(error);
-            // 处理错误，显示错误消息或执行其他必要的操作
-          });
-    };
-
-
-    const showApprovalDialog = (student) => {
-      newStudent.name = student.name; // 设置审批对话框中的学生姓名
-      newStudent.studentId = student.studentId; // 设置审批对话框中的学生学号
-      newStudent.approvalStatus = ''; // 重置审批状态
-      newStudent.reason = ''; // 重置不通过理由
-      addStudentDialogVisible.value = true; // 显示审批对话框
-    };
-
-    const viewAttachments = (student) => {
-      // Implement the logic to view the attachments of the selected student
-      // You can use a modal or a separate page to display the attachments
-      // You may need to fetch the attachments data from the server based on the student's information
-    };
-
-    const submitApproval = () => {
-      if (newStudent.approvalStatus === '不通过' && !newStudent.reason) {
-        ElMessage.error('请输入不通过理由');
-        return;
-      }
-
-      axios
-          .post('http://localhost:8080/api/applicants/approval', {
-            studentId: newStudent.studentId,
-            academicEvaluation: newStudent.approvalStatus,
-            reason: newStudent.reason,
-          })
-          .then(() => {
-            // 重置审批对话框字段
-            // newStudent.approvalStatus = '';
-            // newStudent.reason = '';
-            addStudentDialogVisible.value = false; // 关闭审批对话框
-
-            // 更新学生列表中对应学生的教务评定字段
-            const updatedStudents = students.value.map((student) => {
-              if (student.studentId === newStudent.studentId) {
-                return {
-                  ...student,
-                  academicEvaluation: newStudent.approvalStatus,
-                };
-              }
-              return student;
-            });
-
-            students.value = updatedStudents; // 更新学生列表
-          })
-          .catch((error) => {
-            console.error(error);
-            ElMessage.error('提交审批失败');
-          });
-    };
-
-
-    const cancelApproval = () => {
-      // Reset the approval dialog fields
-      newStudent.approvalStatus = '';
-      newStudent.rejectionReason = '';
-      addStudentDialogVisible.value = false; // Close the approval dialog
-    };
-
-
-    const selectedStudents = ref([]);
-
-    const deleteConfirmationVisible = ref(false);
-
-    const fetchStudents = async (grade) => {
-      try {
-        loading.value = true;
-        const decodedGrade = decodeURIComponent(grade); // Decode the grade
-        const response = await axios.post('http://localhost:8080/api/applicants', { grade: decodedGrade });
-        students.value = response.data.data;
-        studentsTotal.value = response.data.total;
-      } catch (error) {
-        console.error(error);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    // Remove the existing `watch` import statement from the `setup` function
-
-    const deleteStudent = async (student) => {
-      try {
-        await ElMessageBox.confirm('确定要删除该学生吗？', '确认删除', {
-          confirmButtonText: '确认',
-          cancelButtonText: '取消',
-          type: 'warning',
-        });
-
-        // 执行删除操作
-        await axios.delete(`http://localhost:8080/api/applicants/${student.studentId}`);
-
-        // 更新学生列表
-        students.value = students.value.filter((s) => s.studentId !== student.studentId);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const deleteStudentConfirmed = async () => {
-      deleteConfirmationVisible.value = false; // Close the delete confirmation dialog
-
-      // Perform the deletion logic
-      if (selectedStudents.value.length > 0) {
-        try {
-          const selectedIds = selectedStudents.value.map((student) => student.studentId);
-          await Promise.all(
-              selectedIds.map((id) => axios.delete(`http://localhost:8080/api/applicants/${id}`))
-          );
-          students.value = students.value.filter(
-              (student) => !selectedIds.includes(student.studentId)
-          );
-        } catch (error) {
-          console.error(error);
+    const calculateTotalPoints = () => {
+      const calculatePoints = (level) => {
+        switch (level) {
+          case '一类论文':
+            return 30;
+          case '二类论文':
+            return 25;
+          case '三类论文':
+            return 20;
+          case '四类论文':
+            return 15;
+          case '五类论文':
+            return 10;
+          case '六类论文':
+            return 5;
+          default:
+            return 0;
         }
-      }
+      };
 
-      selectedStudents.value = []; // Clear the selected students array
-    };
-
-    const updateStudentScores = async (studentId, academicScore, ideologyScore, researchScore, socialScore) => {
-      try {
-        await axios.post('http://localhost:8080/api/applicants/scores', {
-          studentId: studentId,
-          academicScore: academicScore,
-          ideologyScore: ideologyScore,
-          researchScore: researchScore,
-          socialScore: socialScore,
+      // 计算论文表积分
+      let totalPoints = 0;
+      if (form.papers) {
+        form.papers.forEach((paper) => {
+          totalPoints += calculatePoints(paper.level);
         });
-      } catch (error) {
-        console.error(error);
+      }
+
+      // 计算竞赛表积分
+      if (form.competitions) {
+        form.competitions.forEach((competition) => {
+          totalPoints += calculateCompetitionPoints(competition);
+        });
+      }
+
+      form.totalPoints = totalPoints;
+      return totalPoints;
+    };
+
+
+    watchEffect(() => {
+      form.papers.forEach((paper) => {
+        updatePoints(paper);
+      });
+    });
+
+    const calculatePoints = (level) => {
+      switch (level) {
+        case '一类论文':
+          return 30;
+        case '二类论文':
+          return 25;
+        case '三类论文':
+          return 20;
+        case '四类论文':
+          return 15;
+        case '五类论文':
+          return 10;
+        case '六类论文':
+          return 5;
+        default:
+          return 0;
+      }
+    };
+
+    const addPaper = () => {
+      const paper = {
+        level: '', // 论文级别
+        journal: '', // 发表杂志
+        title: '', // 论文名称
+        points: 0 // 积分
+      };
+      form.papers.push(paper);
+      updatePoints(paper); // 添加论文后立即更新积分
+    };
+
+    const updatePoints = (paper) => {
+      paper.points = calculatePoints(paper.level);
+      calculateTotalPoints();
+    };
+
+    const showDetails = (type) => {
+      if (type === 'paper') {
+        ElMessage({
+          message: '一类论文：CCF推荐A类国际学术期刊/中科院1区\n' +
+              '二类论文：CCF推荐B类国际学术期刊和A类国际学术会议/CCF高质量中文期刊T1类/中科院2区\n' +
+              '三类论文：CCF推荐的C类国际学术期刊和B类国际学术会议/中科院3区\n' +
+              '四类论文：CCF推荐C类国际会议/CCF高质量中文期刊T2类/中科院4区/EI期刊\n' +
+              '五类论文：CCF高质量中文期刊T3类/北大中文核心/CSCD中文核心\n' +
+              '六类论文：一般学术期刊/国内外学术会议\n' ,
+
+          type: 'info'
+        });
+      } else if (type === 'competition') {
+        ElMessage({
+          message: '同一学科竞赛（含晋级赛等），按所有阶段比赛的最高奖项计分，且各阶段的成绩不可叠加;\n' +
+              '学科竞赛分团体赛和个人赛，由多人组队参加的团体赛，由组长负责组员分数分配；省级及以下个人赛分值为标准分值*0.8。\n' +
+              '学科竟赛若有“特等奖”，按照“特等”、”一等”、“二等”等降序排列，对应评选标准中的“一等”、“二等”和“三等”；\n' +
+              '优胜奖”、“参赛奖”等没有获得具体名次学科竞赛，不记入竞赛加分；\n' +
+              '不在学校认定的学科竟赛名单中，需经过学校创新学院认定（需有创新学院盖章证明）比赛等级和类别，按照认定后竞赛级别计算分值；\n' +
+              '不在学校认定的学科竞赛名单中，且学校创新学院不予认定的比赛，不记入学科竞赛加分。',
+          type: 'info'
+        });
       }
     };
 
 
 
-    const calculateTotalScore = (student) => {
-      return (
-          student.academicScore +
-          student.ideologyScore +
-          student.researchScore +
-          student.socialScore
-      );
+    const competitionPoints = {
+      '国家级A1': { '一等奖': 30, '二等奖': 25, '三等奖': 20 },
+      '国家级A2': { '一等奖': 20, '二等奖': 16, '三等奖': 12 },
+      '国家级A3': { '一等奖': 15, '二等奖': 12, '三等奖': 9 },
+      '省级A1': { '一等奖': 15, '二等奖': 12, '三等奖': 9 },
+      '省级A2': { '一等奖': 10, '二等奖': 8, '三等奖': 6 },
+      '省级A3': { '一等奖': 8, '二等奖': 6, '三等奖': 4 },
+      '市级A1': { '一等奖': 4, '二等奖': 3.5, '三等奖': 3 },
+      '市级A2': { '一等奖': 3.5, '二等奖': 3, '三等奖': 2.5 },
+      '市级A3': { '一等奖': 3, '二等奖': 2.5, '三等奖': 2 },
+      '校级': { '一等奖': 1.5, '二等奖': 1, '三等奖': 0.5 },
+      'CCF': { '一等奖': 0.2, '二等奖': 0.2, '三等奖': 0.2 }
     };
 
-    const handleSelectionChange = (selectedItems) => {
-      selectedStudents.value = selectedItems;
+
+    const addCompetition = () => {
+      const competition = {
+        level: '国家级A1', // Initialize with a default value
+        name: '',
+        awardLevel: '一等奖', // Initialize with a default value
+        points: 0
+      };
+      if (!form.competitions) {
+        form.competitions = [];
+      }
+      form.competitions.push(competition);
+      updateCompetitionPoints(competition);
     };
 
-    const handleSizeChange = (newPageSize) => {
-      currentPage.value = 1;
-      pageSize.value = newPageSize;
-      fetchStudents(); // Fetch students again with the new page size
+    const updateCompetitionPoints = (competition) => {
+      if (competition.level && competition.awardLevel) { // Only calculate points if level and awardLevel are defined
+        competition.points = calculateCompetitionPoints(competition);
+        calculateTotalPoints();
+      }
     };
 
-    const handleCurrentChange = (page) => {
-      currentPage.value = page;
-      fetchStudents(); // Fetch students again with the new current page
+    const checkGradeAndShowDialog = () => {
+      if (form.grade === '研一年级') {
+        showDialog.value = true;
+      }
+    };
+    // 监听 form.grade 变化，变化时检查年级并决定是否弹窗
+    watchEffect(checkGradeAndShowDialog);
+
+    const checkGradeAndSubmitForm = () => {
+      if (form.grade === '研一年级') {
+        showDialog.value = true;
+      } else {
+        submitForm();
+      }
     };
 
-    onMounted(() => {
-      fetchStudents('grade1');
-    });
+    const fetchStudentInfo = () => {
+      const studentId = localStorage.getItem('studentId');
+      axios
+          .post('http://localhost:8080/api/students/info', {studentId})
+          .then((response) => {
+            const student = response.data.data;
+            form.studentId = student.studentId;
+            form.name = student.name;
+            form.grade = student.grade;
+            form.major = student.major;
+            if (student.grade === '研一年级') {
+              showDialog.value = true;
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+    };
+
+    const submitForm = () => {
+      formRef.value.validate((valid) => {
+        if (valid) {
+          // 使用 toLocaleDateString 方法将日期转换为 "yyyy-MM-dd" 格式
+          let applicationTimeStr = form.applicationTime.toLocaleDateString('fr-CA');
+
+          const formData = {
+            studentId: form.studentId,
+            name: form.name,
+            grade: form.grade,
+            major: form.major,
+            scholarshipType: form.scholarshipType,
+            applicationMaterial: form.applicationMaterial,
+            applicationTime: applicationTimeStr,  // 使用转换后的日期字符串
+            papers: form.papers,
+            competitions: form.competitions,
+            totalPoints: form.totalPoints,
+          };
+
+          axios
+              // .post('http://localhost:8080/api/applicants/apply', JSON.stringify(data))
+              .post('http://localhost:8080/api/applicants/apply', formData)
+              .then((response) => {
+                if (response.status === 200 && response.data.code === 200) {
+                  // 处理成功提交表单的情况
+                  // 弹出提示提交成功的弹窗
+                  alert("提交成功");
+                } else {
+                  alert("提交失败");
+                  console.error('Error while submitting form:', response);
+                }
+              })
+              .catch((error) => {
+                alert("提交失败");
+                console.error(error);
+              });
+        } else {
+          console.log('表单校验失败');
+          return false;
+        }
+      });
+    };
+
+
+    const fileList = ref([]);
+
+    const handleUploadSuccess = (response, file) => {
+      const responseData = JSON.parse(response.data);
+      if (response.code === 200) {
+        console.log(responseData);
+        if (responseData.filePaths && Array.isArray(responseData.filePaths)) {
+          responseData.filePaths.forEach(filePath => {
+            console.log(filePath);
+            form.applicationMaterial.push(filePath);
+          });
+        } else if (responseData.filePath) {
+          console.log(responseData.filePath);
+          form.applicationMaterial.push(responseData.filePath);
+        }
+        fileList.value.push(file);
+      } else {
+        console.log(response);
+        console.log("Error occurred!");
+      }
+    };
+
+
+
+
+    // 在组件加载完成后获取学生信息
+    onMounted(fetchStudentInfo);
 
     return {
-      students,
-      studentsTotal,
-      loading,
-      currentPage,
-      pageSize,
-      addStudentDialogVisible,
-      newStudent,
-      selectedStudents,
-      deleteConfirmationVisible,
-      deleteStudentConfirmed,
-      showApprovalDialog,
-      viewAttachments,
-      submitApproval,
-      cancelApproval,
-      fetchStudents,
-      deleteStudent,
-      calculateTotalScore,
-      handleSelectionChange,
-      handleSizeChange,
-      handleCurrentChange,
-      openScoreDialog, // 添加的评分对话框方法
-      submitScores, // 添加的提交评分方法
-      handleScoreInput,
-      scoreDialogVisible, // 添加的评分对话框可见性变量
-      currentStudent, // 添加的当前学生评分变量
+      form,
+      rules,
+      formRef,
+      showDialog,
+      fileList,
+      competitionPoints,
+      calculateCompetitionPoints,
+      addCompetition,
+      updateCompetitionPoints,
+      calculatePoints,
+      updatePoints,
+      checkGradeAndSubmitForm,
+      checkGradeAndShowDialog,
+      fetchStudentInfo,
+      submitForm,
+      handleUploadSuccess,
+      addPaper,
+      showDetails,
+      calculateTotalPoints
     };
   },
 };
 </script>
 
 <style>
-/* You can add some styles here to improve the appearance of the page */
-</style>
+.application-container {
+  margin: 20px;
+}
 
+.buttons {
+  margin-top: 10px;
+}
+
+.total-points {
+  margin-top: 20px;
+}
+</style>
