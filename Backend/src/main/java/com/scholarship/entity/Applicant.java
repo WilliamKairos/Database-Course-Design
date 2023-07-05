@@ -22,6 +22,7 @@ public class Applicant {
     private String applicationTime;
     private String papers;
     private String competitions;
+    private double totalPoints;
     private String reason;
     // Add any other necessary fields
 }

@@ -143,7 +143,8 @@ export default {
       applicationMaterial: [],
       applicationTime: '',
       papers: [], // 论文表数据
-      competitions: [] // 竞赛表数据
+      competitions: [], // 竞赛表数据
+      totalPoints: 0
     });
     const app = getCurrentInstance();
     const rules = reactive({
@@ -194,6 +195,7 @@ export default {
         });
       }
 
+      form.totalPoints = totalPoints;
       return totalPoints;
     };
 
@@ -351,8 +353,9 @@ export default {
             scholarshipType: form.scholarshipType,
             applicationMaterial: form.applicationMaterial,
             applicationTime: applicationTimeStr,  // 使用转换后的日期字符串
-            // papers: form.papers,
-            // competitions: form.competitions,
+            papers: form.papers,
+            competitions: form.competitions,
+            totalPoints: form.totalPoints,
           };
 
           axios
@@ -361,11 +364,15 @@ export default {
               .then((response) => {
                 if (response.status === 200 && response.data.code === 200) {
                   // 处理成功提交表单的情况
+                  // 弹出提示提交成功的弹窗
+                  alert("提交成功");
                 } else {
+                  alert("提交失败");
                   console.error('Error while submitting form:', response);
                 }
               })
               .catch((error) => {
+                alert("提交失败");
                 console.error(error);
               });
         } else {

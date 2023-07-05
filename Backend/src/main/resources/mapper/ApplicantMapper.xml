@@ -13,7 +13,7 @@
 
     <insert id="saveScholarship">
         INSERT INTO applicant
-        (student_id, name, grade, scholarshipType, applicationTime, applicationMaterial, papers, competitions)
+        (student_id, name, grade, scholarshipType, applicationTime, applicationMaterial, papers, competitions, totalPoints)
         VALUES
             (
                 #{param1.studentId},
@@ -23,7 +23,9 @@
                 #{param1.applicationTime},
                 #{param1.applicationMaterial},
                 #{param1.papers},
-                #{param1.competitions}
+                #{param1.competitions},
+                #{param1.totalPoints}
+
             )
     </insert>
 </mapper>

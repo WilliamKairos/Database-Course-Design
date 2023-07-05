@@ -3,7 +3,6 @@
     <div class="header">高校奖金评定管理系统</div>
     <div class="main">
       <el-menu class="sidebar" router>
-        <el-menu-item index="/student/profile">个人信息</el-menu-item>
         <el-menu-item index="/student/scholarship-application">奖学金申请</el-menu-item>
       </el-menu>
       <div class="content">

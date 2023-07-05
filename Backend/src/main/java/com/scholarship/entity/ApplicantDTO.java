@@ -20,9 +20,9 @@ public class ApplicantDTO {
     //    private String applicationMaterial; // 修改为 List<String> 类型
     private String academicEvaluation;
     private String applicationTime;
-    private List<String> papers;
-    private List<String> competitions;
-
+    private List<Paper> papers;
+    private List<Competition> competitions;
+    private Double totalPoints;
     private String reason;
     // Add any other necessary fields
 }

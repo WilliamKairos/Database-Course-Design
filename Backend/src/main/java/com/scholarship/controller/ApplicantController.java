@@ -93,6 +93,7 @@ public class ApplicantController {
             applicant.setGrade(request.getGrade());
             applicant.setScholarshipType(request.getScholarshipType());
             applicant.setApplicationTime(request.getApplicationTime());
+            applicant.setTotalPoints(request.getTotalPoints());
 
             if (request.getApplicationMaterial() != null) {
                 String applicationMaterial = mapper.writeValueAsString(request.getApplicationMaterial());
@@ -100,11 +101,11 @@ public class ApplicantController {
             }
             if (request.getPapers() != null) {
                 String papers = mapper.writeValueAsString(request.getPapers());
-                applicant.setApplicationMaterial(papers);
+                applicant.setPapers(papers);
             }
             if (request.getCompetitions() != null) {
                 String competitions = mapper.writeValueAsString(request.getCompetitions());
-                applicant.setApplicationMaterial(competitions);
+                applicant.setCompetitions(competitions);
             }
 
             System.out.println(request);
