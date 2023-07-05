@@ -20,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -81,6 +83,9 @@ public class ApplicantController {
                 request.setGrade("grade3");
             }
 
+            System.out.println(request);
+
+            ObjectMapper mapper = new ObjectMapper();
             Applicant applicant = new Applicant();
             // Copy other fields from request to applicant
             applicant.setStudentId(request.getStudentId());
@@ -90,11 +95,21 @@ public class ApplicantController {
             applicant.setApplicationTime(request.getApplicationTime());
 
             if (request.getApplicationMaterial() != null) {
-                ObjectMapper mapper = new ObjectMapper();
                 String applicationMaterial = mapper.writeValueAsString(request.getApplicationMaterial());
                 applicant.setApplicationMaterial(applicationMaterial);
             }
+            if (request.getPapers() != null) {
+                String papers = mapper.writeValueAsString(request.getPapers());
+                applicant.setApplicationMaterial(papers);
+            }
+            if (request.getCompetitions() != null) {
+                String competitions = mapper.writeValueAsString(request.getCompetitions());
+                applicant.setApplicationMaterial(competitions);
+            }
 
+            System.out.println(request);
+            System.out.println("------------");
+            System.out.println(applicant);
             applicantService.applyScholarship(applicant);
             return new ResponseEntity<>(new Result<>(200, "奖学金申请提交成功", null), HttpStatus.OK);
         } catch (Exception e) {
@@ -142,6 +157,7 @@ public class ApplicantController {
         }
         return "";
     }
+
     // 生成唯一的文件名
     private String generateFileName(String originalFilename) {
         String timestamp = String.valueOf(System.currentTimeMillis());
@@ -168,8 +184,6 @@ public class ApplicantController {
 //        }
 //        return "";
 //    }
-
-
 
 
 }

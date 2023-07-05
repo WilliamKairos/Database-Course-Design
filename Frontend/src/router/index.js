@@ -37,13 +37,7 @@ const routes = [
     children: [
       {
         path: '', // 当访问 /student 时
-        redirect: '/student/profile' // 重定向到 /student/profile
-      },
-      {
-        path: 'profile',
-        name: 'StudentProfile',
-        component: () => import('../views/student/StudentProfile.vue'),
-        meta: { requiresAuth: true }
+        redirect: '/student/scholarship-application' // 重定向到
       },
       {
         path: 'scholarship-application',
