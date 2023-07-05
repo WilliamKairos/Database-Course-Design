@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scholarship.entity.Applicant;
 import com.scholarship.entity.ApplicantDTO;
 import com.scholarship.service.ApplicantService;
+import com.scholarship.utils.AliOSSUtils;
 import com.scholarship.utils.Result;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import java.util.Map;
 @RequestMapping("/api/applicants")
 public class ApplicantController {
     private final ApplicantService applicantService;
+    @Autowired
+    private AliOSSUtils aliOSSUtils;
 
     @Autowired
     public ApplicantController(ApplicantService applicantService) {
@@ -118,64 +121,86 @@ public class ApplicantController {
             return new ResponseEntity<>(new Result<>(500, "奖学金申请提交失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
     @PostMapping("/upload")
-    public ResponseEntity<Result<String>> handleFileUpload(@RequestParam("file") List<MultipartFile> files) {
+    public ResponseEntity<Result<String>> handleFileUpload(@RequestParam("file") List<MultipartFile> files){
         try {
-            // 指定保存文件的文件夹路径
-            String uploadFolder = "/Users/wushangyuan/Downloads";
-
-            // 用于存储所有文件的路径
             List<String> filePaths = new ArrayList<>();
-
-            // 遍历所有文件并保存到指定路径
-            for (MultipartFile file : files) {
-                String fileName = generateFileName(file.getOriginalFilename());
-                Path filePath = Path.of(uploadFolder, fileName);
-                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                String filePathString = filePath.toString();
-                filePaths.add(filePathString);
+            for (MultipartFile file : files){
+//                String originalFilename = file.getOriginalFilename();
+                String url = aliOSSUtils.upload(file);
+                filePaths.add(url);
+                System.out.println(url);
             }
-
-            // 构建附件信息，将文件路径存储到 applicationMaterial 属性中
-            String applicationMaterial = buildApplicationMaterial(filePaths);
-            return new ResponseEntity<>(new Result<>(200, "文件上传成功", applicationMaterial), HttpStatus.OK);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Result<>(500, "文件上传失败", null));
-        }
-    }
-
-    // 更新 buildApplicationMaterial 方法以处理多个文件路径
-    private String buildApplicationMaterial(List<String> filePaths) {
-        try {
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(Map.of("filePaths", filePaths));
+            String applicationMaterial = objectMapper.writeValueAsString(Map.of("filePaths", filePaths));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+            return new ResponseEntity<>(new Result<>(200, "上传成功", applicationMaterial), HttpStatus.OK);
+
         } catch (IOException e) {
             e.printStackTrace();
+            return new ResponseEntity<>(new Result<>(500, "奖学金申请提交失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
+
         }
-        return "";
     }
-
-    // 生成唯一的文件名
-    private String generateFileName(String originalFilename) {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String extension = getFileExtension(originalFilename);
-        return timestamp + extension;
-    }
-
-    // 获取文件扩展名
-    private String getFileExtension(String filename) {
-        int dotIndex = filename.lastIndexOf(".");
-        if (dotIndex > 0 && dotIndex < filename.length() - 1) {
-            return filename.substring(dotIndex);
-        }
-        return "";
-    }
-
-    //    // 构建附件信息
+//
+//    @PostMapping("/upload")
+//    public ResponseEntity<Result<String>> handleFileUpload(@RequestParam("file") List<MultipartFile> files) {
+//        try {
+//            // 指定保存文件的文件夹路径
+//            String uploadFolder = "/Users/wushangyuan/Downloads";
+//
+//            // 用于存储所有文件的路径
+//            List<String> filePaths = new ArrayList<>();
+//
+//            // 遍历所有文件并保存到指定路径
+//            for (MultipartFile file : files) {
+//                String fileName = generateFileName(file.getOriginalFilename());
+//                Path filePath = Path.of(uploadFolder, fileName);
+//                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+//                String filePathString = filePath.toString();
+//                filePaths.add(filePathString);
+//            }
+//
+//            // 构建附件信息，将文件路径存储到 applicationMaterial 属性中
+//            String applicationMaterial = buildApplicationMaterial(filePaths);
+//            return new ResponseEntity<>(new Result<>(200, "文件上传成功", applicationMaterial), HttpStatus.OK);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(new Result<>(500, "文件上传失败", null));
+//        }
+//    }
+//
+//    // 更新 buildApplicationMaterial 方法以处理多个文件路径
+//    private String buildApplicationMaterial(List<String> filePaths) {
+//        try {
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            return objectMapper.writeValueAsString(Map.of("filePaths", filePaths));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return "";
+//    }
+//
+//    // 生成唯一的文件名
+//    private String generateFileName(String originalFilename) {
+//        String timestamp = String.valueOf(System.currentTimeMillis());
+//        String extension = getFileExtension(originalFilename);
+//        return timestamp + extension;
+//    }
+//
+//    // 获取文件扩展名
+//    private String getFileExtension(String filename) {
+//        int dotIndex = filename.lastIndexOf(".");
+//        if (dotIndex > 0 && dotIndex < filename.length() - 1) {
+//            return filename.substring(dotIndex);
+//        }
+//        return "";
+//    }
+//
+//        // 构建附件信息
 //    private String buildApplicationMaterial(String filePath) {
 //        try {
 //            ObjectMapper objectMapper = new ObjectMapper();

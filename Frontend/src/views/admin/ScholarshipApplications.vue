@@ -302,18 +302,34 @@ export default {
       attachmentDialogVisible.value = true; // Show the dialog for viewing attachments
 
       // Add the logic for downloading attachments
+      // const downloadAttachments = () => {
+      //   const attachmentUrls = JSON.parse(student.applicationMaterial || '[]');
+      //   attachmentUrls.forEach((url) => {
+      //     // Trigger the download for each attachment URL
+      //     const link = document.createElement('a');
+      //     link.href = url;
+      //     link.download = url.substring(url.lastIndexOf('/') + 1);
+      //     link.target = '_blank';
+      //     link.rel = 'noopener noreferrer';
+      //     link.click();
+      //   });
+      // };
       const downloadAttachments = () => {
         const attachmentUrls = JSON.parse(student.applicationMaterial || '[]');
-        attachmentUrls.forEach((url) => {
-          // Trigger the download for each attachment URL
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = url.substring(url.lastIndexOf('/') + 1);
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.click();
+
+        attachmentUrls.forEach((url, index) => {
+          setTimeout(() => { // use setTimeout to introduce delay
+            // Trigger the download for each attachment URL
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = url.substring(url.lastIndexOf('/') + 1);
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.click();
+          }, 2000 * index); // delay of 2 seconds for each download
         });
       };
+
       // Add the downloadAttachments method to the current context
       currentStudent.downloadAttachments = downloadAttachments;
     };
@@ -489,6 +505,7 @@ export default {
       papers,
       competitions,
       attachmentDialogVisible,
+      updateStudentScores,
       deleteStudentConfirmed,
       showApprovalDialog,
       viewAttachments,
