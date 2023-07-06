@@ -9,7 +9,7 @@
         <el-input v-model="form.name" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="年级" prop="grade">
-        <el-input v-model="form.grade" :disabled="true"></el-input>
+        <el-input v-model="form.displayedGrade" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="专业" prop="major">
         <el-input v-model="form.major" :disabled="true"></el-input>
@@ -138,6 +138,18 @@ export default {
       studentId: '',
       name: '',
       grade: '',
+      get displayedGrade() {
+        switch (this.grade) {
+          case 'grade1':
+            return '研一年级';
+          case 'grade2':
+            return '研二年级';
+          case 'grade3':
+            return '研三年级';
+          default:
+            return '';
+        }
+      },
       major: '',
       scholarshipType: '',
       applicationMaterial: [],

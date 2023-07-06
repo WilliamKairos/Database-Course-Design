@@ -76,10 +76,12 @@ public class StudentController {
         }
     }
 
-    @DeleteMapping("/{studentId}")
+    @DeleteMapping("/delete/{studentId}")
     public ResponseEntity<Result<Object>> deleteStudent(@PathVariable("studentId") String studentId) {
+        System.out.println(studentId);
         try {
             Student student = studentService.getStudentById(studentId);
+            System.out.println(studentId);
             if (student == null) {
                 return new ResponseEntity<>(new Result<>(404, "学生不存在", null), HttpStatus.NOT_FOUND);
             }
@@ -116,6 +118,7 @@ public class StudentController {
             return new ResponseEntity<>(new Result<>(500, "查询学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }
 

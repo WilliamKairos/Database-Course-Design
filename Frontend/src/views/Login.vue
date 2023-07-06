@@ -52,7 +52,7 @@ export default {
           if (user.userType === 'admin') {
             router.push(redirect || '/admin');
           } else {
-            router.push(redirect || '/student/profile');
+            router.push(redirect || '/student');
           }
         } else {
           // 登录失败

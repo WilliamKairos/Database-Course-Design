@@ -69,10 +69,8 @@ public class ApplicantController {
         }
     }
 
-    // Add mappings for any other necessary methods
 
 
-// ...
 
     @PostMapping("/apply")
     public ResponseEntity<Result<Void>> applyScholarship(@RequestBody ApplicantDTO request) {
@@ -90,7 +88,6 @@ public class ApplicantController {
 
             ObjectMapper mapper = new ObjectMapper();
             Applicant applicant = new Applicant();
-            // Copy other fields from request to applicant
             applicant.setStudentId(request.getStudentId());
             applicant.setName(request.getName());
             applicant.setGrade(request.getGrade());

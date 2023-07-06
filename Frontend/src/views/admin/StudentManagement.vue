@@ -7,7 +7,11 @@
       <el-table-column prop="gender" label="性别"></el-table-column>
       <el-table-column prop="phoneNumber" label="手机号码"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="grade" label="年级"></el-table-column>
+      <el-table-column prop="grade" label="年级">
+        <template #default="{ row }">
+          {{ getGradeLabel(row.grade) }}
+        </template>
+      </el-table-column>
       <el-table-column prop="major" label="专业"></el-table-column>
       <el-table-column label="操作">
         <template #default="{ row }">
@@ -48,7 +52,11 @@
           <el-input v-model="editForm.email"></el-input>
         </el-form-item>
         <el-form-item label="年级" prop="grade">
-          <el-input v-model="editForm.grade"></el-input>
+          <el-select v-model="editForm.grade">
+            <el-option label="研一年级" value="grade1"></el-option>
+            <el-option label="研二年级" value="grade2"></el-option>
+            <el-option label="研三年级" value="grade3"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="专业" prop="major">
           <el-input v-model="editForm.major"></el-input>
@@ -183,7 +191,7 @@ export default {
     const totalItems = ref(0);
     const editDialogVisible = ref(false);
     const editForm = reactive({
-      id: '',
+      // id: '',
       studentId: '',
       name: '',
       gender: '',
@@ -192,6 +200,14 @@ export default {
       grade: '',
       major: '',
     });
+    const getGradeLabel = (grade) => {
+      const gradeMap = {
+        grade1: "研一年级",
+        grade2: "研二年级",
+        grade3: "研三年级",
+      };
+      return gradeMap[grade] || "";
+    };
     const deleteConfirmVisible = ref(false);
     const deleteTarget = ref(null);
     const addDialogVisible = ref(false);
@@ -217,6 +233,8 @@ export default {
       grade: '',
       major: '',
     });
+
+
     const showSearchDialog = () => {
       searchDialogVisible.value = true;
     };
@@ -258,8 +276,17 @@ export default {
       editFormRef.value.validate((valid) => {
         if (valid) {
           // 验证通过，保存编辑的学生
+          const data = {
+            studentId: editForm.studentId,
+            name: editForm.name,
+            gender: editForm.gender,
+            phoneNumber: editForm.phoneNumber,
+            email: editForm.email,
+            grade: editForm.grade,
+            major: editForm.major,
+          };
           axios
-              .put(`http://localhost:8080/api/students/${editForm.id}`, editForm)
+              .put(`http://localhost:8080/api/students/${data.studentId}`, data)
               .then((response) => {
                 if (response.status === 200 || response.status === 204) {
                   getStudents(); // 重新获取一次数据，确保数据是最新的
@@ -280,31 +307,69 @@ export default {
     };
 
     const showDeleteConfirm = (row) => {
-      deleteTarget.value = row;
-      deleteConfirmVisible.value = true;
+      deleteTarget.value = row; // 设置要删除的目标学生
+      deleteConfirmVisible.value = true; // 显示删除确认对话框
     };
 
     const cancelDelete = () => {
-      deleteConfirmVisible.value = false;
-      deleteTarget.value = null; // add this line
+      deleteTarget.value = null; // 取消删除目标学生
+      deleteConfirmVisible.value = false; // 隐藏删除确认对话框
     };
 
     const confirmDelete = () => {
-      if (deleteTarget.value) {
-        // Delete student logic using Element Plus components
-        axios
-            .delete(`http://localhost:8080/api/students/${deleteTarget.value.id}`)
-            .then(() => {
-              deleteConfirmVisible.value = false;
+      const studentId = deleteTarget.value.studentId;
+      console.log('Delete student:', studentId);
+      axios.delete(`http://localhost:8080/api/students/delete/${studentId}`)
+          .then((response) => {
+            const result = response.data;
+            if (result.code === 200) {
+              // 删除成功，刷新学生列表
               getStudents();
-              console.log("Delete student:", deleteTarget.value);
-              deleteTarget.value = null; // add this line
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-      }
+            } else {
+              // 删除失败，显示错误信息
+              ElMessage.error(result.message);
+            }
+            // 重置删除相关变量
+            deleteTarget.value = null;
+            deleteConfirmVisible.value = false;
+          })
+          .catch((error) => {
+            console.error(error);
+            console.log('有错误')
+            // 处理错误，显示错误提示
+            ElMessage.error('删除学生失败');
+            // 重置删除相关变量
+            deleteTarget.value = null;
+            deleteConfirmVisible.value = false;
+          });
     };
+
+    // const showDeleteConfirm = (row) => {
+    //   deleteTarget.value = row;
+    //   deleteConfirmVisible.value = true;
+    // };
+    //
+    // const cancelDelete = () => {
+    //   deleteConfirmVisible.value = false;
+    //   deleteTarget.value = null; // add this line
+    // };
+    //
+    // const confirmDelete = () => {
+    //   if (deleteTarget.value) {
+    //     // Delete student logic using Element Plus components
+    //     axios
+    //         .delete(`http://localhost:8080/api/students/delete/${deleteTarget.value.id}`)
+    //         .then(() => {
+    //           deleteConfirmVisible.value = false;
+    //           getStudents();
+    //           console.log("Delete student:", deleteTarget.value);
+    //           deleteTarget.value = null; // add this line
+    //         })
+    //         .catch((error) => {
+    //           console.error(error);
+    //         });
+    //   }
+    // };
     const resetDeleteConfirm = () => {
       deleteTarget.value = null;
     };
@@ -434,6 +499,7 @@ export default {
       addFormRef,
       searchDialogVisible,
       searchForm,
+      getGradeLabel,
       showSearchDialog,
       cancelSearch,
       performSearch,
