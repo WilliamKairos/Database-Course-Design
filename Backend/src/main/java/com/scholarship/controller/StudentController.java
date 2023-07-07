@@ -1,6 +1,7 @@
 package com.scholarship.controller;
 
 import com.scholarship.entity.Student;
+import com.scholarship.service.ApplicantService;
 import com.scholarship.service.StudentService;
 import com.scholarship.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,12 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    private final ApplicantService applicantService;
+
     @Autowired
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, ApplicantService service) {
         this.studentService = studentService;
+        this.applicantService = service;
     }
 
     @PostMapping("/getStudent")
@@ -43,6 +47,7 @@ public class StudentController {
     @PostMapping("/saveStudent")
     public ResponseEntity<Result<Student>> saveStudent(@RequestBody Student student) {
         try {
+            student.setDeleted(false);
             Student savedStudent = studentService.saveStudent(student);
             return new ResponseEntity<>(new Result<>(200, "成功保存学生信息", savedStudent), HttpStatus.OK);
         } catch (Exception e) {
@@ -78,18 +83,25 @@ public class StudentController {
 
     @DeleteMapping("/delete/{studentId}")
     public ResponseEntity<Result<Object>> deleteStudent(@PathVariable("studentId") String studentId) {
-        System.out.println(studentId);
         try {
             Student student = studentService.getStudentById(studentId);
-            System.out.println(studentId);
             if (student == null) {
                 return new ResponseEntity<>(new Result<>(404, "学生不存在", null), HttpStatus.NOT_FOUND);
             }
 
-            studentService.deleteStudent(studentId);
+            // 删除与该学生相关的申请信息
+//            studentService.deleteApplicantByStudentId(studentId);
+            applicantService.deleteApplicant(studentId);
+
+            // 逻辑删除学生
+            student.setDeleted(true);
+            studentService.updateStudent(student);
+
+//            // 删除学生
+//            studentService.deleteStudent(studentId);
 
             return new ResponseEntity<>(new Result<>(200, "学生已删除", null), HttpStatus.OK);
-        } catch (Exception         e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(new Result<>(500, "删除学生失败", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }

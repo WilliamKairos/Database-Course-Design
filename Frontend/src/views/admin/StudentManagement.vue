@@ -97,7 +97,11 @@
           <el-input v-model="addForm.email"></el-input>
         </el-form-item>
         <el-form-item label="年级" prop="grade">
-          <el-input v-model="addForm.grade"></el-input>
+          <el-select v-model="addForm.grade">
+            <el-option label="研一年级" value="grade1"></el-option>
+            <el-option label="研二年级" value="grade2"></el-option>
+            <el-option label="研三年级" value="grade3"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="专业" prop="major">
           <el-input v-model="addForm.major"></el-input>

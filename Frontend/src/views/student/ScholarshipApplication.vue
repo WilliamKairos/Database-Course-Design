@@ -380,7 +380,6 @@ export default {
                   alert("提交成功");
                 } else {
                   alert("提交失败");
-                  console.error('Error while submitting form:', response);
                 }
               })
               .catch((error) => {
